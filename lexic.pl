@@ -23,27 +23,27 @@ lex(halloween, period).
 
 % Heros
 lex('John Snow',hero).
-lex('Anakin',hero).
 lex('Obi-Wan',hero).
 lex('Unicorn',hero).
 lex('Ragnar',hero).
 lex('Snowman',hero).
+lex('Winston',hero).
+% Articles
+lex('the',article).
+lex('a',article).
 
 
 % wapp - weather adjective could be applied
 % papp - place adjectives could be applied 
 %Places
-lex('hall', place).
-lex('ship',place).
-lex('castle',place).
-lex('forest',place).
-lex('mountains',place).
-lex('Britan', place).
-lex('Island', place).
+lex(castle, place,[hall, forge, cabinet, stable]).
+lex(spaceship,place,[bridge, gym]).
+lex(forest,place,['fallen tree', tent]).
+lex(london,place, [cabinet, tavern, pub, prison(bad)]).
+lex(mountains,place,[cave, 'dwarf hall']).
+lex(britan, place,[lodon, edinburg, 'horse back']).
+% Smaller locations
 
-% Articles
-lex('the',article).
-lex('a',article).
 
 
 % prp - preposition of place
@@ -67,15 +67,12 @@ lex('to',prep,prm).
 lex('across',prep,prm).
 lex('into',prep,prm).
 lex('through',prep,prm).
- 
-%lex('to',prep).
-%lex('on',prep).
-%lex('about',prep).
-%lex('with',prep).
-%lex('in',prep,papp).
-%lex('under',prep,papp).
-%lex('on',prep,papp).
-
+ %Moods
+lex(happy,mood,good).
+lex(angry,mood,bad).
+lex(cheerful,mood,good).
+lex(hopeful,mood,good).
+lex(feared,mood,bad).
 
 % Sentence connectors
 lex('was',sc,past).
@@ -85,17 +82,16 @@ lex('is',sc, continous).
 
 % Nouns
 lex('guitar',n,s).
-lex('football',n,s).
 lex('magic',n,s).
 lex('sword',n,s).
-lex('north',n,s).
 lex('book',n,s).
 lex('shield',n,s).
 lex('hat',n,s).
 lex('backpack',n,s).
 lex('goblet',n,s).
 lex('clock',n,s).
-lex('dragon',n,s).
+lex('boot',n,s).
+lex('knife',n,s).
 
 
 % human_appliable - happ
@@ -113,24 +109,26 @@ lex('interested',participle,happ).
 % human appliable - happ.
 % weather appliable - wapp.
 % place appliable - papp
+lex('',_,_,_).
+lex(rainy,adj,wapp,bad).
 lex('giggling',adj,happ,good).
-lex('cloudy',adj,wapp,_).
-lex('boring',adj,_,_).
-lex('funny',adj,_,_).
-lex('interesting',adj,_,_).
-lex('galactic',adj,papp,_).
-lex('space',adj,papp,_).
-lex('medival',adj,papp,_).
-lex('lonely',adj,happ,_).
+lex('cloudy',adj,wapp,good).
+lex('boring',adj,_,good).
+lex('funny',adj,_,good).
+lex('interesting',adj,_,good).
+lex('galactic',adj,papp,good).
+lex('space',adj,papp,good).
+lex('medival',adj,papp,good).
+lex('lonely',adj,happ,good).
 lex('angry',adj,happ,bad).
 lex('crazy',adj,happ,bad).
 lex('cute',adj,happ,good).
-lex('good-looking',adj,happ,_).
+lex('good-looking',adj,happ,good).
 lex('friendly',adj,happ,good).
 lex('graceful',adj,happ,good).
-lex('old',adj,happ,_).
-lex('unlucky',adj,happ,_).
-lex('young',adj,happ,_).
+lex('old',adj,happ,good).
+lex('unlucky',adj,happ,good).
+lex('young',adj,happ,good).
 
 % Format
 % lex(word, v, time, list_of_related_prepositions)

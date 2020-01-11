@@ -2,152 +2,125 @@
 :- use_module(library(aggregate)).
 :- dynamic calls/1.
 
-max_calls(10).
+max_calls(4).
 
 
 story --> {
-			random_grammar_clause(2,introduction,Introduction),
-			assertz(calls(0)),
-			writeln(['Intro',Introduction])}, 
+			random_grammar_clause(1,introduction,Introduction)
+		  }, 
 			Introduction. 
 
-%story --> s(introduction,Time),['.'],
-%	  s(hero_acts,Time),['.'],
-%	  s(hero_acts,Time).
+%
+% It was sunny outside, so his mood was good.
+% It was rainy outside, so he was angry.
+% It is .... outside, so he is ... .
+% Hero was sitting in [rest place] and [doing some action]. He was [mood].
+%
+introduction(start_in_place) --> place_descr(GlobalMood,Location), 
+								hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood),
+								{writeln([GlobalMood, Location, Hero,ConcretePlace, HeroMood])}.
 
-%% It was a .... in ....
-%% It is a ... in ....
-%% Hero ... made ..... -> caused.
+% Return hero name, and his concrete location
+hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
+												   hero_action,
+												   hero_location(Location,ConcretePlace),
+												   hero_mood(GlobalMood, HeroMood).
 
-% It is the boring afternoon inside medival ship .
-% Anakin learn with a guitar. Another hero ... doing ..... .  
-% Waaaah !!! - dragon roars (dangeorous). {Hero} taking his {weapon} and running on {place}.
-% Watch out , {Another hero} !. He running throughr {place}, 
-% {swinging with his weapon} <-- vp(with good/bad intention). 
-% {result}
-
-chapter--> s(event,bad).
-
-introduction(place_desription,Time) --> {rand_word([times],0,Time)},
-				   place_p(Time),
-				   ['.'],
-				   s(hero_acts,Time),
-				   {
-					   next_statement(introduction_condition,
-									  introduction,
-									   2,
-									   chapter,
-									   NextSentence
-									)
-					},
-	   				NextSentence.
-
-introduction(action,Time) --> {rand_word([times],0,Time)},
-				  s(hero_acts, Time),
-				  {
-					next_statement(introduction_condition,
-						introduction,
-						 2,
-						 chapter,
-						 NextSentence
-					  )					
-				  },
-				  NextSentence.
+% Return mood of hero
+hero_mood(GlobalMood, HeroMood) --> ['He was'],
+									mood(GlobalMood, HeroMood),
+									[.].
 
 
-s(event,Intention) --> exclam, 
-					   action(continous,Intention).
-
-s(empty,_) --> ['The end'].
-
-s(hero_acts,Time) --> {random_grammar_clause(2,hero_p,HeroPhrase)},
-		      HeroPhrase,
-			  action(Time),
-			  ['.']. 
-
-%%'It is a sunny day in the Galactic Hall. Tired, Anakin learning to play the guitar'.
-%% 'Exited with new toy, Anakin learing to play the guitar'.
-% Time is a time form of action: continous, past perfect, present perfect.
-action(Time) --> vp(Time),
-		 		 np.
-
-action(Time,Intention) -->  hero_p(with_adj,Intention),
-							 vp(Time,Intention).
-
-vp(present) --> sc(present),v(infinitive).
-
-vp(continous) --> sc(continous), v(continous).
-
-vp(past) --> sc(past),
-	     	 v(continous).
-
-vp(Time,Intention) -->  sc(Time),v(Time,Intention), n.
-
-hero_p(with_adj,Intention) --> 
-							  adj(happ,Intention),
-					          hero.
-
-hero_p(simple,_) --> hero.
-
-hero_p(extended,_) --> participle_p,
-		     		 		   hero.
+% Return concrete location of hero
+hero_location(Location,ConcretePlace) --> prep(prp),
+										adj(papp),
+										place(Location, ConcretePlace),
+										[.].
 
 
+hero_action --> ['was'],
+				v(continous),
+				n,
+				[.].
 
-place_p(Time) --> ['It'], 
-		  sc(Time),
-		  article, 
-		  adj(wapp),
-		  period,
-		  {random_grammar_clause(1,place_ph,PlacePhrase)},
-		  PlacePhrase.
+% Return Mood, Location to introduction
+place_descr(Mood, Location) --> weather(Mood),
+								{(var(Mood)->Mood=good;
+								 true)},
+								prep(prp),
+								adj(papp),
+								place(Location),
+								['.'].
+			 
 
-place_ph(extended) --> prep(prp),
-	               adj(papp),
-             	       place.
+% Return type of weather outside. 
+weather(Type) --> ['It is a'],
+			      adj(wapp,Type),
+			      period.
 
-place_ph(simple) --> prep(prp),
-	     	     place.
-
-participle_p --> participle,
-		 prep,
-		 np,
-		 [','].
-
-np --> article,
-       n.
-
-
-prep --> [Word],{rand_word([prep,_],0,Word)}.
-
-prep(Target) --> [Word],{rand_word([prep,Target],0,Word)}.
-
-n --> [Word],{rand_word([n, _],0,Word)}.
 
 article --> [Word],{rand_word([article],0,Word)}.
+adj(Target) --> [Word],{rand_word([adj,Target,_],0,Word)}.
+% Returns random weather and mood associated with it
+adj(Target,Mood) --> [Word],{rand_lexem([adj,Target,_],0,lex(Word,_,_,Mood))}.
+n --> [Word],{rand_word([n, _],0,Word)}.
+prep --> [Word],{rand_word([prep,_],0,Word)}.
+prep(Target) --> [Word],{rand_word([prep,Target],0,Word)}.
+period --> [Word],{rand_word([period],0,Word)}.
+
+% Location in place is the same is place.
+place(Location) --> [Word],{rand_word([place,_],0,Word),Location = Word}.
+% Returns possible location of hero in place he now.
+place(GlobalLocation,ConcretePlace) --> [ConcretePlace],
+										{
+											rand_lexem([GlobalLocation,place],2,lex(_,_,Places)),
+											random_element(Places,ConcretePlace)
+										}.
 
 v(GrammarForm) --> {rand_lexem([v,GrammarForm,_,_], 0, lex(Word,_,_,PrepositionList,_)),
 		    connect_verb_prep(Word,PrepositionList,Result)},
 		    Result.
-		
 v(GrammarForm,Intention) --> {rand_lexem([v,GrammarForm,_,Intention], 0, lex(Word,_,_,PrepositionList,_)),
 		connect_verb_prep(Word,PrepositionList,Result)},
-		Result.
+		Result.			
+
+hero(Hero) --> adj(happ),
+		[Hero],
+		{rand_lexem([hero],0,lex(Hero,_))}.
+
+% Return mood 
+mood(GMood,HeroMood) --> [HeroMood],{rand_word([mood,GMood],0,HeroMood)}.
 
 
-hero --> [Word],{rand_word([hero],0,Word)}.
-exclam --> [Word],{rand_word([exclam],0,Word)}.
+random_element(List,Element):-
+	length(List,L),
+	random(0, L, I),
+	nth0(I,List,Element).
+% hero --> [Word],{rand_word([hero],0,Word)}.
 
-participle --> [Word],{rand_word([participle,_],0,Word)}.
 
-adj(Target) --> [Word],{rand_word([adj,Target,_],0,Word)}.
-adj(Target,Intention) --> [Word],{rand_word([adj,Target,Intention],0,Word)}.
 
-sc(Time) --> [Word],{rand_word([sc,Time],0,Word)}.
 
-period --> [Word],{rand_word([period],0,Word)}.
 
-place --> [Word],{rand_word([place],0,Word)}.
+
+
+
+
+
+
+
+% 
+% exclam --> [Word],{rand_word([exclam],0,Word)}.
+
+% participle --> [Word],{rand_word([participle,_],0,Word)}.
+
+
+
+
+% sc(Time) --> [Word],{rand_word([sc,Time],0,Word)}.
+
+
 
 
 
@@ -203,15 +176,125 @@ remove_diff_list_from_clause(ClauseWithDiff, Result):-
 	append(ParamsWithoutDiffList, DiffList, Params),
 	Result =.. [Predicate|ParamsWithoutDiffList].
 
-next_statement(Condition, Predicate, ArgCount, SentenceIfFalse, Result):-
-	(Condition ->(random_grammar_clause(ArgCount,Predicate,Result));
-	(Result = SentenceIfFalse)
-	).
+% next_statement(Condition, Predicate, ArgCount, SentenceIfFalse, Result):-
+% 	(Condition ->(random_grammar_clause(ArgCount,Predicate,Result));
+% 	(Result = SentenceIfFalse)
+% 	).
 
-introduction_condition:-
-	retract(calls(N)),
-	max_calls(M),
-	N<M,
-	IncN is N + 1,
-	assertz(calls(IncN)).
-	
+% introduction_condition:-
+% 	retract(calls(N)),
+% 	max_calls(M),
+% 	N<M,
+% 	IncN is N + 1,
+% 	assertz(calls(IncN)).
+
+
+% repeat(Predicate, Args,Calls, MaxCalls, Result):-
+% 	Calls<MaxCalls,
+% 	C is Calls + 1,
+% 	repeat(Predicate, Args,C,MaxCalls,MidRes),
+% 	append([Predicate|Args],[X,[]],P),
+% 	Pred =.. P,
+% 	Pred,
+% 	append(X, MidRes, Result),
+% 	writeln(MidRes),
+% 	writeln(X)
+% 	.
+
+% repeat(Predicate, Args,Calls,MaxCalls,X):-
+% 	writeln(Calls),
+% 	Calls = MaxCalls,
+% 	append([Predicate|Args],[X,[]],P),
+% 	Pred =.. P,
+% 	Pred.
+
+
+
+
+
+
+
+% place_p(Time) --> ['It'], 
+% 		  sc(Time),
+% 		  article, 
+% 		  adj(wapp),
+% 		  period,
+% 		  {random_grammar_clause(1,place_ph,PlacePhrase)},
+% 		  PlacePhrase.
+
+% place_ph(extended) --> prep(prp),
+% 	               adj(papp),
+%              	       place.
+
+% place_ph(simple) --> prep(prp),
+% 	     	     place.
+
+
+% introduction(start_from_action)-->[true].
+
+
+% introducr,Time) --> {rand_word([times],0,Time)},
+% 			place_p(Time),
+% 			['.'],
+% 			chapter.
+	 
+% introduction(action,Time) --> {rand_word([times],0,Time)},
+% 		   s(hero_acts, Time),
+% 		   chapter.
+
+
+% conclusion --> ['and the day end'].
+
+% chapter--> s(event,bad), s(event,bad), s(event,bad), conclusion.
+
+
+
+			
+
+
+% s(event,Intention) --> exclam, 
+% 					   action(continous,Intention).
+
+% s(empty,_) --> ['The end'].
+
+% s(hero_acts,Time) --> {random_grammar_clause(2,hero_p,HeroPhrase)},
+% 		      HeroPhrase,
+% 			  action(Time),
+% 			  ['.']. 
+
+
+% action(Time) --> vp(Time),
+% 		 		 np.
+
+% action(Time,Intention) -->  hero_p(with_adj,Intention),
+% 							 vp(Time,Intention).
+
+% vp(present) --> sc(present),v(infinitive).
+
+% vp(continous) --> sc(continous), v(continous).
+
+% vp(past) --> sc(past),
+% 	     	 v(continous).
+
+% vp(Time,Intention) -->  sc(Time),v(Time,Intention), n.
+
+% hero_p(with_adj,Intention) --> 
+% 							  adj(happ,Intention),
+% 					          hero.
+
+% hero_p(simple,_) --> hero.
+
+% hero_p(extended,_) --> participle_p,
+% 		     		 		   hero.
+
+
+
+
+
+% participle_p --> participle,
+% 		 prep,
+% 		 np,
+% 		 [','].
+
+% np --> article,
+%        n.
