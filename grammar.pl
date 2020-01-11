@@ -1,14 +1,15 @@
 :- consult('lexic').
 :- use_module(library(aggregate)).
+:- dynamic calls/1.
+
+max_calls(10).
 
 
-story --> {random_grammar_clause(2,introduction,Introduction)}, 
-	   Introduction,
-	   {
-		   random_grammar_clause(2,introduction,NextSentence),
-	   	   writeln(NextSentence)
-	   },
-	   NextSentence. 
+story --> {
+			random_grammar_clause(2,introduction,Introduction),
+			assertz(calls(0)),
+			writeln(['Intro',Introduction])}, 
+			Introduction. 
 
 %story --> s(introduction,Time),['.'],
 %	  s(hero_acts,Time),['.'],
@@ -25,32 +26,41 @@ story --> {random_grammar_clause(2,introduction,Introduction)},
 % {swinging with his weapon} <-- vp(with good/bad intention). 
 % {result}
 
-introduction(chapter, _) --> ['chapter'].
+chapter--> s(event,bad).
+
 introduction(place_desription,Time) --> {rand_word([times],0,Time)},
 				   place_p(Time),
 				   ['.'],
-				   s(hero_acts,Time).
-				%    {
-		   				% random_grammar_clause(2,introduction,NextSentence),
-	   	   				% writeln(NextSentence)
-	   				% },
-	   				% NextSentence.
+				   s(hero_acts,Time),
+				   {
+					   next_statement(introduction_condition,
+									  introduction,
+									   2,
+									   chapter,
+									   NextSentence
+									)
+					},
+	   				NextSentence.
 
 introduction(action,Time) --> {rand_word([times],0,Time)},
-				  s(hero_acts, Time).
-				%   {
-					% random_grammar_clause(2,introduction,NextSentence),
-					% writeln(NextSentence)
-				%   },
-				%   NextSentence.
+				  s(hero_acts, Time),
+				  {
+					next_statement(introduction_condition,
+						introduction,
+						 2,
+						 chapter,
+						 NextSentence
+					  )					
+				  },
+				  NextSentence.
 
 
-s(chapter,_) --> ['chapter']. 
-s(event,_) --> ['event'].
+s(event,Intention) --> exclam, 
+					   action(continous,Intention).
 
 s(empty,_) --> ['The end'].
 
-s(hero_acts,Time) --> {random_grammar_clause(1,hero_p,HeroPhrase)},
+s(hero_acts,Time) --> {random_grammar_clause(2,hero_p,HeroPhrase)},
 		      HeroPhrase,
 			  action(Time),
 			  ['.']. 
@@ -61,20 +71,28 @@ s(hero_acts,Time) --> {random_grammar_clause(1,hero_p,HeroPhrase)},
 action(Time) --> vp(Time),
 		 		 np.
 
-vp(present) --> v(infinitive).
+action(Time,Intention) -->  hero_p(with_adj,Intention),
+							 vp(Time,Intention).
 
-vp(continous) --> v(continous).
+vp(present) --> sc(present),v(infinitive).
+
+vp(continous) --> sc(continous), v(continous).
 
 vp(past) --> sc(past),
 	     	 v(continous).
 
-hero_p(with_adj) --> adj(happ),
-					 hero.
+vp(Time,Intention) -->  sc(Time),v(Time,Intention), n.
 
-hero_p(simple) --> hero.
+hero_p(with_adj,Intention) --> 
+							  adj(happ,Intention),
+					          hero.
 
-hero_p(extended) --> participle_p,
-		     		 hero.
+hero_p(simple,_) --> hero.
+
+hero_p(extended,_) --> participle_p,
+		     		 		   hero.
+
+
 
 place_p(Time) --> ['It'], 
 		  sc(Time),
@@ -108,15 +126,22 @@ n --> [Word],{rand_word([n, _],0,Word)}.
 
 article --> [Word],{rand_word([article],0,Word)}.
 
-v(GrammarForm) --> {rand_lexem([v,GrammarForm,_], 0, lex(Word,_,_,PrepositionList)),
+v(GrammarForm) --> {rand_lexem([v,GrammarForm,_,_], 0, lex(Word,_,_,PrepositionList,_)),
 		    connect_verb_prep(Word,PrepositionList,Result)},
 		    Result.
+		
+v(GrammarForm,Intention) --> {rand_lexem([v,GrammarForm,_,Intention], 0, lex(Word,_,_,PrepositionList,_)),
+		connect_verb_prep(Word,PrepositionList,Result)},
+		Result.
+
 
 hero --> [Word],{rand_word([hero],0,Word)}.
+exclam --> [Word],{rand_word([exclam],0,Word)}.
 
 participle --> [Word],{rand_word([participle,_],0,Word)}.
 
-adj(Target) --> [Word],{rand_word([adj,Target],0,Word)}.
+adj(Target) --> [Word],{rand_word([adj,Target,_],0,Word)}.
+adj(Target,Intention) --> [Word],{rand_word([adj,Target,Intention],0,Word)}.
 
 sc(Time) --> [Word],{rand_word([sc,Time],0,Word)}.
 
@@ -172,15 +197,21 @@ random_grammar_clause(ArgCount, Predicate, Result):-
 	nth_clause(GrammarC, I, R), clause(ClauseWithDiffList, _, R),
 	remove_diff_list_from_clause(ClauseWithDiffList,Result).
 
-
 remove_diff_list_from_clause(ClauseWithDiff, Result):-
 	ClauseWithDiff =.. [Predicate|Params],
 	length(DiffList, 2),
 	append(ParamsWithoutDiffList, DiffList, Params),
 	Result =.. [Predicate|ParamsWithoutDiffList].
 
+next_statement(Condition, Predicate, ArgCount, SentenceIfFalse, Result):-
+	(Condition ->(random_grammar_clause(ArgCount,Predicate,Result));
+	(Result = SentenceIfFalse)
+	).
 
-
-
+introduction_condition:-
+	retract(calls(N)),
+	max_calls(M),
+	N<M,
+	IncN is N + 1,
+	assertz(calls(IncN)).
 	
-

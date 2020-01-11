@@ -4,6 +4,13 @@ lex(continous, times).
 lex(present, times).
 lex(past, times).
 
+
+%exlamations
+lex('Waahh!',exclam).
+lex('Aggghaf!',exclam).
+lex('Rrrrrrr!',exclam).
+
+
 % Periods
 lex(day, period).
 lex(night, period).
@@ -87,21 +94,9 @@ lex('shield',n,s).
 lex('hat',n,s).
 lex('backpack',n,s).
 lex('goblet',n,s).
+lex('clock',n,s).
+lex('dragon',n,s).
 
-% Adjectives 
-% _ - universal adjectives 
-% human appliable - happ.
-% weather appliable - wapp.
-% place appliable - papp
-lex('giggling',adj,happ).
-lex('cloudy',adj,wapp).
-lex('boring',adj,_).
-lex('funny',adj,_).
-lex('interesting',adj,_).
-lex('galactic',adj,papp).
-lex('space',adj,papp).
-lex('medival',adj,papp).
-lex('lonely',adj,_).
 
 % human_appliable - happ
 % Participles
@@ -113,14 +108,45 @@ lex('interested',participle,happ).
 % Participle
 
 
+% Adjectives 
+% _ - universal adjectives 
+% human appliable - happ.
+% weather appliable - wapp.
+% place appliable - papp
+lex('giggling',adj,happ,good).
+lex('cloudy',adj,wapp,_).
+lex('boring',adj,_,_).
+lex('funny',adj,_,_).
+lex('interesting',adj,_,_).
+lex('galactic',adj,papp,_).
+lex('space',adj,papp,_).
+lex('medival',adj,papp,_).
+lex('lonely',adj,happ,_).
+lex('angry',adj,happ,bad).
+lex('crazy',adj,happ,bad).
+lex('cute',adj,happ,good).
+lex('good-looking',adj,happ,_).
+lex('friendly',adj,happ,good).
+lex('graceful',adj,happ,good).
+lex('old',adj,happ,_).
+lex('unlucky',adj,happ,_).
+lex('young',adj,happ,_).
+
 % Format
 % lex(word, v, time, list_of_related_prepositions)
 % list_of_related_prepositions = [with,at, ...]
 % Verbs
-lex('play',v,infinitive,[with, on]).
-lex('learn',v,infinitive,[with, at]).
-lex('puffing',v,continous,[at, on, out]).
-lex('learning',v,continous, [about, to]).
-lex('playing',v,continous, [with, on]).
-lex('giggling',v,continous,[at, about]).
+lex('play',v,infinitive,[with, on],good).
+lex('learn',v,infinitive,[with, at],good).
+lex('puffing',v,continous,[at, on],good).
+lex('learning',v,continous, [about, to],good).
+lex('playing',v,continous, [with, on],good).
+lex('giggling',v,continous,[at, about],good).
+lex('work',v,infinitive,[with],good).
+lex('jump',v,infinitive,[into],good).
+lex('run',v,infinitive,[through],good).
+lex('sleep',v,infinitive,[under],good).
+lex('roaring',v,continous,[at],bad).
+lex('killing',v,continous,[''],bad).
+lex('robing',v,continous,[the],bad).
 
