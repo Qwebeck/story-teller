@@ -117,10 +117,10 @@ lex('interested',participle,happ).
 % lex(word, v, time, list_of_related_prepositions)
 % list_of_related_prepositions = [with,at, ...]
 % Verbs
-lex('play',v,infinitive,[with, at]).
+lex('play',v,infinitive,[with, on]).
 lex('learn',v,infinitive,[with, at]).
 lex('puffing',v,continous,[at, on, out]).
 lex('learning',v,continous, [about, to]).
-lex('playing',v,continous, [with, at]).
+lex('playing',v,continous, [with, on]).
 lex('giggling',v,continous,[at, about]).
 

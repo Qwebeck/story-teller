@@ -1,8 +1,15 @@
 :- consult('lexic').
 :- use_module(library(aggregate)).
 
+
 story --> {random_grammar_clause(2,introduction,Introduction)}, 
-	   Introduction.
+	   Introduction,
+	   {
+		   random_grammar_clause(2,introduction,NextSentence),
+	   	   writeln(NextSentence)
+	   },
+	   NextSentence. 
+
 %story --> s(introduction,Time),['.'],
 %	  s(hero_acts,Time),['.'],
 %	  s(hero_acts,Time).
@@ -11,39 +18,63 @@ story --> {random_grammar_clause(2,introduction,Introduction)},
 %% It is a ... in ....
 %% Hero ... made ..... -> caused.
 
+% It is the boring afternoon inside medival ship .
+% Anakin learn with a guitar. Another hero ... doing ..... .  
+% Waaaah !!! - dragon roars (dangeorous). {Hero} taking his {weapon} and running on {place}.
+% Watch out , {Another hero} !. He running throughr {place}, 
+% {swinging with his weapon} <-- vp(with good/bad intention). 
+% {result}
+
+introduction(chapter, _) --> ['chapter'].
 introduction(place_desription,Time) --> {rand_word([times],0,Time)},
-			       place_p(Time).
+				   place_p(Time),
+				   ['.'],
+				   s(hero_acts,Time).
+				%    {
+		   				% random_grammar_clause(2,introduction,NextSentence),
+	   	   				% writeln(NextSentence)
+	   				% },
+	   				% NextSentence.
 
 introduction(action,Time) --> {rand_word([times],0,Time)},
-			      s(hero_acts, Time).
+				  s(hero_acts, Time).
+				%   {
+					% random_grammar_clause(2,introduction,NextSentence),
+					% writeln(NextSentence)
+				%   },
+				%   NextSentence.
 
 
+s(chapter,_) --> ['chapter']. 
+s(event,_) --> ['event'].
+
+s(empty,_) --> ['The end'].
 
 s(hero_acts,Time) --> {random_grammar_clause(1,hero_p,HeroPhrase)},
 		      HeroPhrase,
-		      action(Time). 
+			  action(Time),
+			  ['.']. 
 
 %%'It is a sunny day in the Galactic Hall. Tired, Anakin learning to play the guitar'.
 %% 'Exited with new toy, Anakin learing to play the guitar'.
 % Time is a time form of action: continous, past perfect, present perfect.
 action(Time) --> vp(Time),
-		 np.
+		 		 np.
 
-%vp(present) --> v(infinitive).
+vp(present) --> v(infinitive).
 
-%vp(continous) --> v(continous), 
-%		  prep, 
-%		  n.
+vp(continous) --> v(continous).
 
 vp(past) --> sc(past),
-	     v(continous),
-	     prep,
-	     n.
+	     	 v(continous).
+
+hero_p(with_adj) --> adj(happ),
+					 hero.
 
 hero_p(simple) --> hero.
 
 hero_p(extended) --> participle_p,
-		     hero.
+		     		 hero.
 
 place_p(Time) --> ['It'], 
 		  sc(Time),
@@ -147,4 +178,9 @@ remove_diff_list_from_clause(ClauseWithDiff, Result):-
 	length(DiffList, 2),
 	append(ParamsWithoutDiffList, DiffList, Params),
 	Result =.. [Predicate|ParamsWithoutDiffList].
+
+
+
+
+	
 
