@@ -14,16 +14,46 @@ location_preposition(
 location_preposition(['fallen tree',spaceship,lodon, edinburg, 'horse back',bridge], [on,under]).
 
 
+connect_loc_prep([],_).
 
 connect_loc_prep([Loc|Locations],Prepositions):-
-    length(Locations, L),
-    L>0,
-    !,
-    assert(lex(Loc,loc_prep,Prepositions)),
-    connect_loc_prep(Locations,Prepositions).    
+    (\+lex(Loc,loc_prep,_) ->
+    assertz(lex(Loc,loc_prep,Prepositions));
+    add_prepositions(Loc,Prepositions)
+    ),
+    connect_loc_prep(Locations,Prepositions).   
 
-connect_loc_prep([Loc],Prepositions):-
-    assert(lex(Loc,loc_prep,Prepositions)).
+
+% Add preposition to list of available prepositions for place
+add_prepositions(Loc,Prepositions):-
+    lex(Loc,loc_prep,ExPrep),
+    retractall(lex(Loc,loc_prep,_)),
+    include(is_member_of(ExPrep), Prepositions, FilteredPrep),
+    append(ExPrep,FilteredPrep,New),
+    assertz(lex(Loc,loc_prep,New)).
+
+is_member_of(List,X):-
+    var(X),
+    X = is_member_of(List).
+
+is_member_of(List,X):-
+    \+member(X,List).
+
+% connect_loc_prep([Loc],Prepositions):-
+%     (\+lex(Loc,loc_prep,Prepositions) ->
+%     assertz(lex(Loc,loc_prep,Prepositions));
+%     add_prepositions(Loc,Prepositions)
+%     ),
+
+% connect_loc_prep([Loc|Locations],Prepositions):-
+%         writeln('here'),
+%         retractall(lex(Loc,loc_prep,ExPrep)),
+%         append(ExPrep,Prepositions,NewPrep),
+%         assertz(lex(Loc,loc_prep,NewPrep)),
+%         connect_loc_prep(Locations,Prepositions).
+
+        
+        
 
 % Times 
 lex(continous, times).
