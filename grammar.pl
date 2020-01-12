@@ -8,11 +8,12 @@ max_calls(4).
 % Add relations between phrases.
 % Add more events
 % Add UI, that allow user to add his own clausules: name, phrase, ....
-
-
+introduction_number(1).
+event_number(2).
 story --> 
 		 {
-			random_grammar_clause_v2(introduction,[_],Introduction)
+			introduction_number(N),
+			random_grammar_clause_v2(introduction,N,[_],Introduction)
 		  },
 		  Introduction,
 		  {writeln('Introduction End')}. 
@@ -28,7 +29,8 @@ introduction(start_in_place) --> place_descr(GlobalMood,Location),
 								hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood),
 								{
 									writeln([GlobalMood, Location, Hero,ConcretePlace, HeroMood]),
-									random_grammar_clause_v2(event,[_,GlobalMood, 
+									event_number(N),
+									random_grammar_clause_v2(event,N,[_,GlobalMood, 
 																	  Location,
 																	  Hero,
 																	  ConcretePlace,
@@ -38,6 +40,16 @@ introduction(start_in_place) --> place_descr(GlobalMood,Location),
 								Event,
 								{writeln('End event')}.
 
+introduction(start_from_action) --> place_descr(GlobalMood,Location),{
+	writeln([GlobalMood, Location, Hero,ConcretePlace, HeroMood]),
+	random_grammar_clause_v2(event,[_,GlobalMood, 
+									  Location,
+									  Hero,
+									  ConcretePlace,
+									  HeroMood],Event),
+									  writeln(Event)
+},Event.
+							
 % Return hero name, and his concrete location
 hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
 												   hero_action,
@@ -54,7 +66,6 @@ event(other_hero,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->
 	hero_reacts(HeroMood).
 	
 event(robbery,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->[true].
-
 
 hero_speaks(Hero) --> [Hero], 
 					  ['hello'].
@@ -190,11 +201,13 @@ connect_verb_prep(Verb,PrepList,[Verb,Prep]):-
 	random(0,L,I),
 	nth0(I,PrepList,Prep).
 
-random_grammar_clause_v2(Predicate, Args, Result):-
+% Don't use aggregate, because prolog goes through all possibilities, while counting with aggregate. 
+% The reason is - is that aggregate - is an implemantation of bagof, an bagof looks untill he won't fail.
+random_grammar_clause_v2(Predicate, NumberOfPossibilities, Args, Result):-
 	length(Pl, 2),
 	append(Args,Pl,Arglist),
 	GrammarC =.. [Predicate|Arglist],
-	aggregate(count,Args^GrammarC,NumberOfPossibilities),
+	% aggregate(count,Args^GrammarC,NumberOfPossibilities),
 	random_between(1,NumberOfPossibilities, I),	
 	nth_clause(GrammarC, I, R), clause(ClauseWithDiffList, _, R),
 	remove_diff_list_from_clause(ClauseWithDiffList, Args,Result).
@@ -205,19 +218,27 @@ random_grammar_clause_v2(Predicate, Args, Result):-
 %% Returns random grammar clause
 %% ArgCount - number of arguments, grammmar clause accepts (without undeneath differential list)
 %% Clause - name of grammar clause 
-random_grammar_clause(ArgCount, Predicate, Result):-
+random_grammar_clause(ArgCount, Predicate, NumberOfPredicates, Result):-
 	C is ArgCount + 2,
 	length(Args, C),
 	GrammarC =.. [Predicate|Args],
-	aggregate(count,Args^GrammarC,NumberOfPossibilities),
-	random_between(1,NumberOfPossibilities, I),	
-	nth_clause(GrammarC, I, R), clause(ClauseWithDiffList, _, R),
+	% Don't use it, because prolog goes through all possibilities, while counting with aggregate. 
+	% The reason is - is that aggregate - is an implemantation of bagof, an bagof looks untill he won't fail.
+	% aggregate(count,Args^GrammarC,NumberOfPossibilities),
+	% writeln(NumberOfPossibilities),
+	random_between(1,NumberOfPredicates, I),	
+	writeln(I),
+	nth_clause(GrammarC, I, R),writeln([GrammarC]),clause(ClauseWithDiffList, _, R),
+	writeln('Should enter remove'),
 	remove_diff_list_from_clause(ClauseWithDiffList,Result).
 
 remove_diff_list_from_clause(ClauseWithDiff, Result):-
+	writeln('Enter remove'),
 	ClauseWithDiff =.. [Predicate|Params],
+	writeln(['Here',ParamsWithoutDiffList]),	
 	length(DiffList, 2),
 	append(ParamsWithoutDiffList, DiffList, Params),
+	writeln(ParamsWithoutDiffList),	
 	Result =.. [Predicate|ParamsWithoutDiffList].
 
 remove_diff_list_from_clause(ClauseWithDiff, Args,Result):-
