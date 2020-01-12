@@ -1,3 +1,7 @@
+% Utils to work with grammar:
+% random_element - choose random element from list
+% random_word - choose random word from 
+
 random_element(List,Element):-
 	length(List,L),
 	random(0, L, I),
@@ -12,17 +16,21 @@ insert(Element, I, [H|T], [H|NT]) :-
  
 
 
-%% Wrapper around get_rand_lexem, that takes a list of ignore parametrs, as argument.
+% Wrapper around rand_lexem
 rand_word(IgnoreParamsList, GoalPos, Result):-   	
-	insert(_,GoalPos,IgnoreParamsList,NewPred),
-    	Template =.. [lex|NewPred],
-	bagof(Template,IgnoreParamsList^Template, PossibleLexems),
-	length(PossibleLexems, L),
-	random(0, L, I),
-	nth0(I, PossibleLexems, Lexem),
+	% insert(_,GoalPos,IgnoreParamsList,NewPred),
+    % 	Template =.. [lex|NewPred],
+	% bagof(Template,IgnoreParamsList^Template, PossibleLexems),
+	% length(PossibleLexems, L),
+	% random(0, L, I),
+	% nth0(I, PossibleLexems, Lexem),
+   
+    rand_lexem(IgnoreParamsList, GoalPos, Lexem),
 	Lexem =.. [lex|Params],
-	nth0(GoalPos,Params,Result).
+    nth0(GoalPos,Params,Result).
+    % writeln(['Rand word', Result]).
 
+% choose random lexem , from lexems that have same 
 rand_lexem(IgnoreParamsList, GoalPos, Result):-   	
 	insert(_,GoalPos,IgnoreParamsList,NewPred),
     	Template =.. [lex|NewPred],
@@ -112,8 +120,9 @@ is_member_of(List,X):-
 % Capitilizing first letters of word, that goes after period
 process_story([],[]).
 process_story(['.',Word|Story],['.',Capitilized|Other]):-
-	fist_to_upper(Word,Capitilized),
+    fist_to_upper(Word,Capitilized),
 	process_story(Story, Other).
+
 process_story([Word|Story],[Word|Result]):-
 	process_story(Story, Result).
 
@@ -121,5 +130,6 @@ fist_to_upper(String, Capitilized):-
 	string_chars(String, [FirstChar|Last]),
 	upcase_atom(FirstChar, Uppercased),
 	string_chars(Capitilized,[Uppercased|Last]).
-	
+
+
 

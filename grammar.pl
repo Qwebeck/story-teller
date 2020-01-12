@@ -3,13 +3,8 @@
 :- use_module(library(aggregate)).
 :- (dynamic calls/1).
 
-
-
-% Goals:
-% Add relations between phrases.
-% Add more events
-% Add UI, that allow user to add his own clausules: name, phrase, ....
-% For safety reasons, write a predicate, that connects all places with predicates
+% Number of grammar clause. Used to randomly choose between tham, 
+% with predicate random_grammar_clause_v2/4
 introduction_number(1).
 event_number(1).
 
@@ -17,15 +12,9 @@ story -->
     { introduction_number(N),
       random_grammar_clause_v2(introduction, N, [_], Introduction)
     },
-    Introduction. 
+	Introduction,
+	{writeln('End Introduction')}. 
 
-%
-% It was sunny outside, so his mood was good.
-% It was rainy outside, so he was angry.
-% It is .... outside, so he is ... .
-% Hero was sitting in [rest place] and [doing some action]. He was [mood].
-% Suddenly another hero comes in [hero location].
-% [our hero], [other hero replic]. [our hero answer dependent on mood].
 introduction(start_in_place) -->
     place_descr(GlobalMood, Location),
     hero_descr(GlobalMood, Location, Hero, ConcretePlace, HeroMood),
@@ -51,37 +40,48 @@ hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
 												   hero_location(Location,ConcretePlace),
 												   ['.'],
 												   ['he was'],
-												   hero_mood(GlobalMood, HeroMood),
+												   mood(GlobalMood, HeroMood),
 												   mood_reason(HeroMood),
 												   ['.'].
 
+% Event of other hero coming to main hero
 event(other_hero,GlobalMood,_Location,Hero,ConcretePlace,HeroMood)-->
+	{writeln(['Place: ',ConcretePlace]),
+	 ConcretePlace = [Preposition,Place],
+	 writeln(['Enter event with',GlobalMood,Hero,ConcretePlace,HeroMood])
+	},
 	['Suddenly'],
-	hero_mood(GlobalMood,AnotherHeroMood),
+	mood(GlobalMood,AnotherHeroMood),
 	hero(no_adj, AnotherHero),
-	['comes in'],
-	[ConcretePlace],
+	['comes '],
+	[Preposition,Place],
 	[':'],
 	['"'],
 	hero_speaks(AnotherHero,Hero,Asks),
 	ask_explanation(Asks,SubjectOfAsk),
 	['"."'],
+	{writeln(['Enter hero reacts 1:',HeroMood,Asks,SubjectOfAsk, AnotherHero, AnswerTone])},
 	hero_reacts(HeroMood,Asks,SubjectOfAsk, AnotherHero, AnswerTone),
 	['"-says'],
 	[Hero],
 	['.'],
 	{
+		writeln('Comes in block'),
 		% answer of main hero can choose mood of other hero on negative.
 		% but he can also stay in his normal mood
-		random_element([AnswerTone,AnotherHeroMood],Tone),
+	 	lex(AnotherHeroMood,mood,AnotherHeroIntention),
+		random_element([AnswerTone,AnotherHeroIntention],Tone),
+		
 		% map answer tone to possible reactions
 		rand_word([reaction,Tone],0,Reaction)
 	},
 	['"'],
+	{writeln(['Params',AnotherHeroMood,Reaction, SubjectOfAsk,Hero])},
 	hero_reacts(AnotherHeroMood,Reaction, SubjectOfAsk,Hero,_),
 	['"-answer'],
 	[AnotherHero].
-	
+
+% Currently unsed event. Here other hero will come and stole something from main hero
 %event(robbery,_GM,_Location,_Hero,_ConcretePlace,_HeroMood)-->[robbery].
 
 
@@ -93,25 +93,36 @@ hero_reacts(HeroMood,Abstract, Subject, AnswerTo, AnswerTone) -->
 									replic(answer,AnswerTone),
 									[AnswerTo],
 									['.'],
-									expand_reaction(Abstract,Subject, HeroMood).
+									expand_reaction(Abstract,Subject, HeroMood),
+									{writeln(['Get in hero reacts',HeroMood,Abstract, Subject, AnswerTo, AnswerTone])}.
 
+
+% Expands reaction on present event. 
+% Here character in some way reacts on what other herobring to him
 expand_reaction(present,Present,Mood) --> reaction_on_present(Mood),
-										  [Present].
+										  [Present],
+										  {writeln(['Reaction',Present,Mood])},
+										  !.
 
+% Expands restment of other character on present given to him 
 expand_reaction(resentment,Present,_) --> ['That was brude from your side! I wasted a lot of time trying to find that'],
-										  [Present].
+										  [Present],
+										  !.
 
 expand_reaction(welcome_speech,Present,_) --> ['I knew you wanted this'],
 												[Present],
-												['.You are welcome.'].
+												['.You are welcome.'],
+												!.
 
 
+% Takes hero Mood. Returns phrase, that he can say having such mood.
 reaction_on_present(Mood) --> [Phrase],
 							{   
 								lex(Mood,mood,Tone),
 								rand_word([reaction_on_present,Tone],0,Phrase)
 							}.
-% Explains what  present someone presenting. Returns given present. 
+
+% Explains what present someone presenting. Returns Present, which is an object. 
 ask_explanation(present,Present) --> [Phrase],
 							 {
 							   rand_word([present_phrase],0,Phrase)  
@@ -121,7 +132,7 @@ ask_explanation(present,Present) --> [Phrase],
 
 ask_explanation(_) --> [empty].
 
-% Returns text of greeting, and ask of Hero.
+% Returns text of greeting, and what other hero asks our Hero.
 hero_speaks(Hero, ToHero, Asks) -->  {
 								 	 	random_element(['','Hi',
 											 			'Hello',
@@ -141,22 +152,23 @@ hero_speaks(Hero, ToHero, Asks) -->  {
 
 
 
-% Return replic of hero as text, and Meaning of replic.
-%replic(Hero,Asks)
 
-% Return mood of hero
-hero_mood(GlobalMood, HeroMood) --> mood(GlobalMood, HeroMood).
+% % Return mood of hero 
+% mood(GlobalMood, HeroMood) --> mood(GlobalMood, HeroMood).
 
 
 % Return concrete location of hero
+% Concrete place is a of preposition and place
 hero_location(Location,ConcretePlace) --> [Preposition],
 										adj(papp),
-										place(Location, ConcretePlace),
+										place(Location, Place),
 										{
-											lex(ConcretePlace,loc_prep,ProperPrepositions),
-											random_element(ProperPrepositions,Preposition)
+											lex(Place,loc_prep,ProperPrepositions),
+											random_element(ProperPrepositions,Preposition),
+											ConcretePlace = [Preposition, Place]
 
-										}.
+										},
+										!.
 
 % In case if location,doesn't connected with any prepositions and first predicate will crash
 hero_location(Location,ConcretePlace) --> prep(prp),
@@ -201,6 +213,7 @@ weather(Type) --> ['It is a'],
 mood_reason(HeroMood) --> [Word],{
 							lex(HeroMood, mood, Intention),
 							rand_word([reas_mood,Intention],0,Word)
+
 							}.
 
 % Returns target noun

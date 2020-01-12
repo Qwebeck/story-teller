@@ -6,7 +6,7 @@ location_preposition(
     [hall, forge, cabinet, bathroom,gym, tent, tavern, pub, prison,cave, 'dwarf hall',castle,
     forest,
     'London',
-    mountains
+    chamber
     ], 
     [in, inside, at]).
 
@@ -199,7 +199,8 @@ lex('giggling',adj,happ,good).
 lex('cloudy',adj,wapp,good).
 lex('boring',adj,_,good).
 lex('funny',adj,_,good).
-lex('interesting',adj,_,good).
+lex('interesting',adj,papp,good).
+lex('interesting',adj,tapp,good).
 lex('galactic',adj,papp,good).
 lex('space',adj,papp,good).
 lex('medival',adj,papp,good).
