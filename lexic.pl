@@ -5,6 +5,7 @@ lex(present, times).
 lex(past, times).
 
 
+
 %exlamations
 lex('Waahh!',exclam).
 lex('Aggghaf!',exclam).
@@ -32,11 +33,25 @@ lex('Winston',hero).
 lex('the',article).
 lex('a',article).
 
+% Replices and their meanings
+lex('I need your help ', replic, help).
+lex('I have something for you', replic,present).
+lex('I bring bad news with me', replic,bad_news).
+lex('I here to tell you something good',replic, good_news).
+lex('I need you!',replic, help).
+lex('It is a good day for you!',replic,present).
+lex('It is a good day for you!',replic,good_news).
+% Answer
+lex('Doesn\'t matter',answer,bad).
+lex('Great, thank you!',answer,good).
+
+
+
 
 % wapp - weather adjective could be applied
 % papp - place adjectives could be applied 
 %Places
-lex(castle, place,[hall, forge, cabinet, stable]).
+lex(castle, place,[hall, forge, cabinet, bathroom]).
 lex(spaceship,place,[bridge, gym]).
 lex(forest,place,['fallen tree', tent]).
 lex(london,place, [cabinet, tavern, pub, prison(bad)]).
@@ -101,7 +116,16 @@ lex('fallen',participle,happ).
 lex('exited',participle,happ).
 lex('interested',participle,happ).
 
-% Participle
+% Greetings 
+% Specific greetings for every character
+
+lex('I know something.',greeting, 'John Snow').
+lex('Use the Force,', greeting,'Obi-Wan').
+lex('I am not a myph.',greeting,'Unicorn').
+lex('Odin gave his eye to acquire knowledge...but I would give far more.',greeting,'Ragnar').
+lex('Hands down, this is the best day of my life.',greeting,'Snowman').
+lex('Success is not final, failure is not fatal: it is the courage to continue that counts. ',greeting,'Winston').
+
 
 
 % Adjectives 

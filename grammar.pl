@@ -4,27 +4,72 @@
 
 max_calls(4).
 
+% Goals:
+% Add relations between phrases.
+% Add more events
+% Add UI, that allow user to add his own clausules: name, phrase, ....
 
-story --> {
-			random_grammar_clause(1,introduction,Introduction)
-		  }, 
-			Introduction. 
+
+story --> 
+		 {
+			random_grammar_clause_v2(introduction,[_],Introduction)
+		  },
+		  Introduction,
+		  {writeln('Introduction End')}. 
 
 %
 % It was sunny outside, so his mood was good.
 % It was rainy outside, so he was angry.
 % It is .... outside, so he is ... .
 % Hero was sitting in [rest place] and [doing some action]. He was [mood].
-%
+% Suddenly another hero comes in [hero location].
+% [our hero], [other hero replic]. [our hero answer dependent on mood].
 introduction(start_in_place) --> place_descr(GlobalMood,Location), 
 								hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood),
-								{writeln([GlobalMood, Location, Hero,ConcretePlace, HeroMood])}.
+								{
+									writeln([GlobalMood, Location, Hero,ConcretePlace, HeroMood]),
+									random_grammar_clause_v2(event,[_,GlobalMood, 
+																	  Location,
+																	  Hero,
+																	  ConcretePlace,
+																	  HeroMood],Event),
+																	  writeln(Event)
+								},
+								Event,
+								{writeln('End event')}.
 
 % Return hero name, and his concrete location
 hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
 												   hero_action,
 												   hero_location(Location,ConcretePlace),
 												   hero_mood(GlobalMood, HeroMood).
+
+event(other_hero,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->
+	['Suddenly'],
+	hero(AnotherHero),
+	['comes in'],
+	[ConcretePlace],
+	['.'],
+	hero_speaks(AnotherHero,Hero,Asks),
+	hero_reacts(HeroMood).
+	
+event(robbery,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->[true].
+
+
+hero_speaks(Hero) --> [Hero], 
+					  ['hello'].
+
+% Returns text of greeting, and ask of Hero.
+hero_speaks(Hero, ToHero, Asks) -->  greeting(Hero),
+							         [ToHero],
+							     	 replic(replic,Asks).
+
+% Takes as arguments Hero, and his mood
+hero_reacts(HeroMood) --> {lex(HeroMood,mood,AnswerTone)},
+						  replic(answer,AnswerTone).
+
+% Return replic of hero as text, and Meaning of replic.
+%replic(Hero,Asks)
 
 % Return mood of hero
 hero_mood(GlobalMood, HeroMood) --> ['He was'],
@@ -89,39 +134,27 @@ hero(Hero) --> adj(happ),
 		[Hero],
 		{rand_lexem([hero],0,lex(Hero,_))}.
 
+replic(Type,Asks) --> [Word],
+				{
+					rand_lexem([Type,Asks], 0, lex(Word,_,Asks))
+				}.			
+
 % Return mood 
 mood(GMood,HeroMood) --> [HeroMood],{rand_word([mood,GMood],0,HeroMood)}.
+greeting(Hero) --> [Greeting],{rand_word([greeting, Hero],0,Greeting)}.
 
 
 random_element(List,Element):-
 	length(List,L),
 	random(0, L, I),
 	nth0(I,List,Element).
-% hero --> [Word],{rand_word([hero],0,Word)}.
 
 
-
-
-
-
-
-
-
-
-
-
-% 
-% exclam --> [Word],{rand_word([exclam],0,Word)}.
-
-% participle --> [Word],{rand_word([participle,_],0,Word)}.
-
-
-
-
-% sc(Time) --> [Word],{rand_word([sc,Time],0,Word)}.
-
-
-
+% insert(Element,0,L,[Element|L]). % ok
+% insert(Element,Pos,[E|L],[E|ZL]):- % you forgot to cons back E
+%     Pos1 is Pos-1,
+%     insert(Element,Pos1,L,ZL). % done, append is useless
+%     %append(E,ZL1,ZL).
 
 
 insert(Element, 0, List, [Element|List]).
@@ -157,6 +190,17 @@ connect_verb_prep(Verb,PrepList,[Verb,Prep]):-
 	random(0,L,I),
 	nth0(I,PrepList,Prep).
 
+random_grammar_clause_v2(Predicate, Args, Result):-
+	length(Pl, 2),
+	append(Args,Pl,Arglist),
+	GrammarC =.. [Predicate|Arglist],
+	aggregate(count,Args^GrammarC,NumberOfPossibilities),
+	random_between(1,NumberOfPossibilities, I),	
+	nth_clause(GrammarC, I, R), clause(ClauseWithDiffList, _, R),
+	remove_diff_list_from_clause(ClauseWithDiffList, Args,Result).
+
+
+
 
 %% Returns random grammar clause
 %% ArgCount - number of arguments, grammmar clause accepts (without undeneath differential list)
@@ -175,6 +219,13 @@ remove_diff_list_from_clause(ClauseWithDiff, Result):-
 	length(DiffList, 2),
 	append(ParamsWithoutDiffList, DiffList, Params),
 	Result =.. [Predicate|ParamsWithoutDiffList].
+
+remove_diff_list_from_clause(ClauseWithDiff, Args,Result):-
+	ClauseWithDiff =.. [Predicate|Params],
+	length(DiffList, 2),
+	append(ParamsWithoutDiffList, DiffList, Params),
+	ParamsWithoutDiffList = Args,
+	Result =.. [Predicate|Args].
 
 % next_statement(Condition, Predicate, ArgCount, SentenceIfFalse, Result):-
 % 	(Condition ->(random_grammar_clause(ArgCount,Predicate,Result));
