@@ -5,13 +5,15 @@ location_preposition(
     [hall, forge, cabinet, bathroom,gym, tent, tavern, pub, prison,cave, 'dwarf hall',castle,
     forest,
     london,
-    mountains,
-    britan], 
+    mountains
+    ], 
     [in, inside, at]).
 
+location_preposition([britan,edinburg],[in]).
 
+location_preposition([mountains, forest], [under]).
 
-location_preposition(['fallen tree',spaceship,lodon, edinburg, 'horse back',bridge], [on,under]).
+location_preposition(['fallen tree',spaceship, 'horse back',bridge], [on,under]).
 
 
 connect_loc_prep([],_).
@@ -39,28 +41,11 @@ is_member_of(List,X):-
 is_member_of(List,X):-
     \+member(X,List).
 
-% connect_loc_prep([Loc],Prepositions):-
-%     (\+lex(Loc,loc_prep,Prepositions) ->
-%     assertz(lex(Loc,loc_prep,Prepositions));
-%     add_prepositions(Loc,Prepositions)
-%     ),
-
-% connect_loc_prep([Loc|Locations],Prepositions):-
-%         writeln('here'),
-%         retractall(lex(Loc,loc_prep,ExPrep)),
-%         append(ExPrep,Prepositions,NewPrep),
-%         assertz(lex(Loc,loc_prep,NewPrep)),
-%         connect_loc_prep(Locations,Prepositions).
-
-        
-        
-
+                
 % Times 
 lex(continous, times).
 lex(present, times).
 lex(past, times).
-
-
 
 %exlamations
 lex('Waahh!',exclam).
@@ -89,6 +74,17 @@ lex('Winston',hero).
 lex('the',article).
 lex('a',article).
 
+% Reasons of mood
+lex('without reason',reas_mood,_).
+lex('because not so far ago he had a good meal',reas_mood,good).
+lex('because his leg was broken',reas_mood,bad).
+lex('because he is living', reas_mood, good).
+lex('because the life is great', reas_mood, good).
+lex('because people are angry', reas_mood, bad).
+lex('because he is hungry', reas_mood, bad).
+
+
+
 % Replices and their meanings
 lex('I need your help ', replic, help).
 lex('I have something for you', replic,present).
@@ -112,7 +108,7 @@ lex(spaceship,place,[bridge, gym]).
 lex(forest,place,['fallen tree', tent]).
 lex(london,place, [cabinet, tavern, pub, prison]).
 lex(mountains,place,[cave, 'dwarf hall']).
-lex(britan, place,[lodon, edinburg, 'horse back']).
+lex(britan, place,[london, edinburg, 'horse back']).
 
 % prp - preposition of place
 % prt - preposition of time
@@ -135,6 +131,7 @@ lex('to',prep,prm).
 lex('across',prep,prm).
 lex('into',prep,prm).
 lex('through',prep,prm).
+
  %Moods
 lex(happy,mood,good).
 lex(angry,mood,bad).

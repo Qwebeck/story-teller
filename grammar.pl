@@ -8,6 +8,9 @@ max_calls(4).
 % Add relations between phrases.
 % Add more events
 % Add UI, that allow user to add his own clausules: name, phrase, ....
+% For safety reasons, write a predicate, that connects all places with predicates
+
+
 introduction_number(1).
 event_number(2).
 
@@ -46,9 +49,11 @@ introduction(start_in_place) --> place_descr(GlobalMood,Location),
 hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
 												   hero_action,
 												   hero_location(Location,ConcretePlace),
+												   ['.'],
 												   ['he was'],
 												   hero_mood(GlobalMood, HeroMood),
-												   mood_reason(HeroMood).
+												   mood_reason(HeroMood),
+												   ['.'].
 
 event(other_hero,GlobalMood,_Location,Hero,ConcretePlace,HeroMood)-->
 	['Suddenly'],
@@ -81,23 +86,26 @@ hero_reacts(HeroMood) --> {lex(HeroMood,mood,AnswerTone)},
 hero_mood(GlobalMood, HeroMood) --> mood(GlobalMood, HeroMood).
 
 % Reason of mood.
-mood_reason(_HeroMood) --> ['without reason'].
 
 % Return concrete location of hero
 hero_location(Location,ConcretePlace) --> [Preposition],
 										adj(papp),
 										place(Location, ConcretePlace),
-										[.],
 										{
+											writeln(ConcretePlace),
 											lex(ConcretePlace,loc_prep,ProperPrepositions),
 											random_element(ProperPrepositions,Preposition)
+
 										}.
 
+% In case if location,doesn't connected with any prepositions and first predicate will crash
+hero_location(Location,ConcretePlace) --> prep(prp),
+										adj(papp),
+										place(Location, ConcretePlace).
 
 hero_action --> ['was'],
 				v(continous),
-				n,
-				[.].
+				n.
 
 % Return Mood, Location to introduction
 place_descr(Mood, Location) --> weather(Mood),
@@ -108,9 +116,20 @@ place_descr(Mood, Location) --> weather(Mood),
 								place(Location),
 								['.'],
 								{	
+									writeln(Location),
 									lex(Location,loc_prep,ProperPrepositions),
-									random_element(ProperPrepositions,Preposition)
+									random_element(ProperPrepositions,Preposition),
+									writeln(Preposition)
 								}.
+
+% Worksin case if location doesn't connect with any prepositions and first predicate will crash
+place_descr(Mood, Location) --> weather(Mood),
+							{(var(Mood)->Mood=good;
+							 true)},
+							prep(prp),
+							adj(papp),
+							place(Location),
+							['.'].
 			 
 
 % Return type of weather outside. 
@@ -118,7 +137,10 @@ weather(Type) --> ['It is a'],
 			      adj(wapp,Type),
 			      period.
 
-
+mood_reason(HeroMood) --> [Word],{
+							lex(HeroMood, mood, Intention),
+							rand_word([reas_mood,Intention],0,Word)
+							}.
 article --> [Word],{rand_word([article],0,Word)}.
 adj(Target) --> [Word],{rand_word([adj,Target,_],0,Word)}.
 % Returns random weather and mood associated with it
