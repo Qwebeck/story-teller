@@ -4,12 +4,12 @@
 location_preposition(
     [hall, forge, cabinet, bathroom,gym, tent, tavern, pub, prison,cave, 'dwarf hall',castle,
     forest,
-    london,
+    'London',
     mountains
     ], 
     [in, inside, at]).
 
-location_preposition([britan,edinburg],[in]).
+location_preposition(['Britan','Edinburg'],[in]).
 
 location_preposition([mountains, forest], [under]).
 
@@ -74,6 +74,16 @@ lex('Winston',hero).
 lex('the',article).
 lex('a',article).
 
+% Variations for help
+lex(someone_attacked,help).
+lex(have_no_money,help).
+lex(have_bad_mood,help).
+% Present phrases
+lex('I found', present_phrase).
+lex('I bought', present_phrase).
+lex('I bring', present_phrase).
+lex('I decided to buy you a ', present_phrase).
+
 % Reasons of mood
 lex('without reason',reas_mood,_).
 lex('because not so far ago he had a good meal',reas_mood,good).
@@ -84,15 +94,18 @@ lex('because people are angry', reas_mood, bad).
 lex('because he is hungry', reas_mood, bad).
 
 
-
 % Replices and their meanings
-lex('I need your help ', replic, help).
+%lex('I need your help, ', replic, help).
 lex('I have something for you', replic,present).
-lex('I bring bad news with me', replic,bad_news).
-lex('I here to tell you something good',replic, good_news).
-lex('I need you!',replic, help).
+%lex('I bring bad news with me', replic,bad_news).
+%lex('I here to tell you something good',replic, good_news).
+%lex('I need you!',replic, help).
 lex('It is a good day for you!',replic,present).
-lex('It is a good day for you!',replic,good_news).
+%lex('It is a good day for you!',replic,good_news).
+
+% Present phrases
+
+
 % Answer
 lex('Doesn\'t matter',answer,bad).
 lex('Great, thank you!',answer,good).
@@ -106,9 +119,9 @@ lex('Great, thank you!',answer,good).
 lex(castle, place,[hall, forge, cabinet, bathroom]).
 lex(spaceship,place,[bridge, gym]).
 lex(forest,place,['fallen tree', tent]).
-lex(london,place, [cabinet, tavern, pub, prison]).
+lex('London',place, [cabinet, tavern, pub, prison]).
 lex(mountains,place,[cave, 'dwarf hall']).
-lex(britan, place,[london, edinburg, 'horse back']).
+lex('Britan', place,['London', 'Edinburg', 'horse back']).
 
 % prp - preposition of place
 % prt - preposition of time
@@ -183,7 +196,10 @@ lex('Success is not final, failure is not fatal: it is the courage to continue t
 % human appliable - happ.
 % weather appliable - wapp.
 % place appliable - papp
-lex('',_,_,_).
+% thing appliable -tapp
+% Syntax
+% lex(Word,adj,Target,Intention)
+lex('',adj,_,_).
 lex(rainy,adj,wapp,bad).
 lex('giggling',adj,happ,good).
 lex('cloudy',adj,wapp,good).
@@ -203,7 +219,15 @@ lex('graceful',adj,happ,good).
 lex('old',adj,happ,good).
 lex('unlucky',adj,happ,good).
 lex('young',adj,happ,good).
-
+lex('long',adj,tapp,_).
+lex('nice',adj,tapp,_).
+lex('ancient',adj,_,_).
+lex('cool',adj,tapp,_).
+lex('charmning',adj,_,good).
+lex('crowded',adj,papp,bad).
+lex('famous',adj,_,good).
+lex('magical',adj,_,good).
+lex('quiet',adj,_,good).
 % Format
 % lex(word, v, time, list_of_related_prepositions)
 % list_of_related_prepositions = [with,at, ...]

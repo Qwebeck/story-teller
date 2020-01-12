@@ -1,6 +1,6 @@
-:- consult('lexic').
+:- consult(lexic).
 :- use_module(library(aggregate)).
-:- dynamic calls/1.
+:- (dynamic calls/1).
 
 max_calls(4).
 
@@ -9,18 +9,16 @@ max_calls(4).
 % Add more events
 % Add UI, that allow user to add his own clausules: name, phrase, ....
 % For safety reasons, write a predicate, that connects all places with predicates
-
-
 introduction_number(1).
 event_number(2).
 
-story --> 
-		 {
-			introduction_number(N),
-			random_grammar_clause_v2(introduction,N,[_],Introduction)
-		  },
-		  Introduction,
-		  {writeln('Introduction End')}. 
+story -->
+    { introduction_number(N),
+      random_grammar_clause_v2(introduction, N, [_], Introduction)
+    },
+    Introduction,
+    { writeln('Introduction End')
+    }. 
 
 %
 % It was sunny outside, so his mood was good.
@@ -29,20 +27,27 @@ story -->
 % Hero was sitting in [rest place] and [doing some action]. He was [mood].
 % Suddenly another hero comes in [hero location].
 % [our hero], [other hero replic]. [our hero answer dependent on mood].
-introduction(start_in_place) --> place_descr(GlobalMood,Location), 
-								hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood),
-								{
-									writeln([GlobalMood, Location, Hero,ConcretePlace, HeroMood]),
-									event_number(N),
-									random_grammar_clause_v2(event,N,[_,GlobalMood, 
-																	  Location,
-																	  Hero,
-																	  ConcretePlace,
-																	  HeroMood],Event),
-																	  writeln(Event)
-								},
-								Event,
-								{writeln('End event')}.
+introduction(start_in_place) -->
+    place_descr(GlobalMood, Location),
+    hero_descr(GlobalMood, Location, Hero, ConcretePlace, HeroMood),
+    { writeln([GlobalMood, Location, Hero, ConcretePlace, HeroMood]),
+      event_number(N),
+      random_grammar_clause_v2(event,
+                               N,
+                               
+                               [ _,
+                                 GlobalMood,
+                                 Location,
+                                 Hero,
+                                 ConcretePlace,
+                                 HeroMood
+                               ],
+                               Event),
+      writeln(Event)
+    },
+    Event,
+    { writeln('End event')
+    }.
 
 							
 % Return hero name, and his concrete location
@@ -61,18 +66,30 @@ event(other_hero,GlobalMood,_Location,Hero,ConcretePlace,HeroMood)-->
 	hero(no_adj, AnotherHero),
 	['comes in'],
 	[ConcretePlace],
-	['.'],
-	hero_speaks(AnotherHero,Hero,_Asks),
+	[':'],
+	['"'],
+	hero_speaks(AnotherHero,Hero,Asks),
+	ask_explanation(Asks,SubjectOfAsk),
+	['"'],
 	hero_reacts(HeroMood).
 	
 event(robbery,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->[robbery].
 
-hero_speaks(Hero) --> [Hero], 
-					  ['hello'].
+
+
+% Explains what  present someone presenting. Returns given present. 
+ask_explanation(present,Present) --> [Phrase],
+							 {
+							   rand_word([present_phrase],0,Phrase)  
+							 },
+							 np(Present).
+
+ask_explanation(_) --> [empty].
 
 % Returns text of greeting, and ask of Hero.
 hero_speaks(Hero, ToHero, Asks) -->  greeting(Hero),
-							         [ToHero],
+									 [ToHero],
+									 ['.'],
 							     	 replic(replic,Asks).
 
 % Takes as arguments Hero, and his mood
@@ -100,8 +117,8 @@ hero_location(Location,ConcretePlace) --> [Preposition],
 
 % In case if location,doesn't connected with any prepositions and first predicate will crash
 hero_location(Location,ConcretePlace) --> prep(prp),
-										adj(papp),
-										place(Location, ConcretePlace).
+										  adj(papp),
+										  place(Location, ConcretePlace).
 
 hero_action --> ['was'],
 				v(continous),
@@ -137,15 +154,25 @@ weather(Type) --> ['It is a'],
 			      adj(wapp,Type),
 			      period.
 
+% Describes what could be the reason of hero mood
 mood_reason(HeroMood) --> [Word],{
 							lex(HeroMood, mood, Intention),
 							rand_word([reas_mood,Intention],0,Word)
 							}.
+
+% Returns target noun
+np(Target) --> article,
+		adj(tapp),
+		n(Target).	
+		
+
 article --> [Word],{rand_word([article],0,Word)}.
 adj(Target) --> [Word],{rand_word([adj,Target,_],0,Word)}.
 % Returns random weather and mood associated with it
 adj(Target,Mood) --> [Word],{rand_lexem([adj,Target,_],0,lex(Word,_,_,Mood))}.
 n --> [Word],{rand_word([n, _],0,Word)}.
+% Returns target, that was presented
+n(Target) --> [Word],{rand_word([n, _],0,Word),Target=Word}.
 prep --> [Word],{rand_word([prep,_],0,Word)}.
 prep(Target) --> [Word],{rand_word([prep,Target],0,Word)}.
 period --> [Word],{rand_word([period],0,Word)}.
@@ -180,7 +207,11 @@ replic(Type,Asks) --> [Word],
 
 % Return mood 
 mood(GMood,HeroMood) --> [HeroMood],{rand_word([mood,GMood],0,HeroMood)}.
+% Return greeting, that characterical for Hero
 greeting(Hero) --> [Greeting],{rand_word([greeting, Hero],0,Greeting)}.
+
+
+
 
 
 random_element(List,Element):-
@@ -276,125 +307,3 @@ remove_diff_list_from_clause(ClauseWithDiff, Args,Result):-
 	ParamsWithoutDiffList = Args,
 	Result =.. [Predicate|Args].
 
-% next_statement(Condition, Predicate, ArgCount, SentenceIfFalse, Result):-
-% 	(Condition ->(random_grammar_clause(ArgCount,Predicate,Result));
-% 	(Result = SentenceIfFalse)
-% 	).
-
-% introduction_condition:-
-% 	retract(calls(N)),
-% 	max_calls(M),
-% 	N<M,
-% 	IncN is N + 1,
-% 	assertz(calls(IncN)).
-
-
-% repeat(Predicate, Args,Calls, MaxCalls, Result):-
-% 	Calls<MaxCalls,
-% 	C is Calls + 1,
-% 	repeat(Predicate, Args,C,MaxCalls,MidRes),
-% 	append([Predicate|Args],[X,[]],P),
-% 	Pred =.. P,
-% 	Pred,
-% 	append(X, MidRes, Result),
-% 	writeln(MidRes),
-% 	writeln(X)
-% 	.
-
-% repeat(Predicate, Args,Calls,MaxCalls,X):-
-% 	writeln(Calls),
-% 	Calls = MaxCalls,
-% 	append([Predicate|Args],[X,[]],P),
-% 	Pred =.. P,
-% 	Pred.
-
-
-
-
-
-
-
-% place_p(Time) --> ['It'], 
-% 		  sc(Time),
-% 		  article, 
-% 		  adj(wapp),
-% 		  period,
-% 		  {random_grammar_clause(1,place_ph,PlacePhrase)},
-% 		  PlacePhrase.
-
-% place_ph(extended) --> prep(prp),
-% 	               adj(papp),
-%              	       place.
-
-% place_ph(simple) --> prep(prp),
-% 	     	     place.
-
-
-% introduction(start_from_action)-->[true].
-
-
-% introducr,Time) --> {rand_word([times],0,Time)},
-% 			place_p(Time),
-% 			['.'],
-% 			chapter.
-	 
-% introduction(action,Time) --> {rand_word([times],0,Time)},
-% 		   s(hero_acts, Time),
-% 		   chapter.
-
-
-% conclusion --> ['and the day end'].
-
-% chapter--> s(event,bad), s(event,bad), s(event,bad), conclusion.
-
-
-
-			
-
-
-% s(event,Intention) --> exclam, 
-% 					   action(continous,Intention).
-
-% s(empty,_) --> ['The end'].
-
-% s(hero_acts,Time) --> {random_grammar_clause(2,hero_p,HeroPhrase)},
-% 		      HeroPhrase,
-% 			  action(Time),
-% 			  ['.']. 
-
-
-% action(Time) --> vp(Time),
-% 		 		 np.
-
-% action(Time,Intention) -->  hero_p(with_adj,Intention),
-% 							 vp(Time,Intention).
-
-% vp(present) --> sc(present),v(infinitive).
-
-% vp(continous) --> sc(continous), v(continous).
-
-% vp(past) --> sc(past),
-% 	     	 v(continous).
-
-% vp(Time,Intention) -->  sc(Time),v(Time,Intention), n.
-
-% hero_p(with_adj,Intention) --> 
-% 							  adj(happ,Intention),
-% 					          hero.
-
-% hero_p(simple,_) --> hero.
-
-% hero_p(extended,_) --> participle_p,
-% 		     		 		   hero.
-
-
-
-
-
-% participle_p --> participle,
-% 		 prep,
-% 		 np,
-% 		 [','].
-
-% np --> article,
-%        n.
