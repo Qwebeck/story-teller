@@ -42,16 +42,29 @@ lex('John Snow', hero).
 lex('Obi-Wan', hero).
 lex('Unicorn', hero).
 lex('Ragnar', hero).
-lex('Snowman', hero).
 lex('Winston', hero).
+%Antagonists
+lex('Tom Riddle',antagonist).
+lex('Foltest',antagonist).
+lex('Grinch',antagonist).
+% Evil actions of antagonist
+lex(' destroy Christmas',something_evil).
+lex(' concure us',something_evil).
+lex(' ruin the King',something_evil).
+lex('rule the Earth',something_evil).
+
+
+
 % Articles
 lex(the, article).
 lex(a, article).
 
 % Variations for help
 lex(someone_attacked, help).
-lex(have_no_money, help).
-lex(have_bad_mood, help).
+% Unimplemented brancehs
+%lex(have_no_money, help).
+%lex(have_bad_mood, help).
+
 % Present phrases
 lex('I found ', present_phrase).
 lex('I bought ', present_phrase).
@@ -73,21 +86,15 @@ lex(welcome_speech, reaction, good).
 
 
 
-% Syntax
-% lex(Phrase,reaction_on_present,Intention)
-lex('That is a great ', reaction_on_present, good).
-lex('I was dreaming about ', reaction_on_present, good).
-lex('I hate ', reaction_on_present, bad).
-lex('I very appreciate this', reaction_on_present, good).
-lex('Don\'t show me this', reaction_on_present, bad).
+
 
 % Replices and their meanings
-%lex('I need your help, ', replic, help).
-lex('I have something for you', replic, present).
+lex('I need your help, ', replic, help).
+%lex('I have something for you', replic, present).
 %lex('I bring bad news with me', replic,bad_news).
 %lex('I here to tell you something good',replic, good_news).
-%lex('I need you!',replic, help).
-lex('It is a good day for you!', replic, present).
+lex('I need you!',replic, help).
+%lex('It is a good day for you!', replic, present).
 %lex('It is a good day for you!',replic,good_news).
 
 % Present phrases
@@ -96,7 +103,7 @@ lex('It is a good day for you!', replic, present).
 % Answer
 lex('Doesn\'t matter', answer, bad).
 lex('I don\'t care', answer, bad).
-lex('I have more important things', answer, bad).
+lex('I hadn\'t expected to hear that from you', answer, bad).
 lex('Great, thank you!', answer, good).
 lex('Glad to hear it.', answer, good).
 
@@ -171,13 +178,39 @@ lex(exited, participle, happ).
 lex(interested, participle, happ).
 
 % Greetings 
-% Specific greetings for every character
+% Сatchphrase for every character
 lex('I know something', greeting, 'John Snow').
 lex('Use the Force', greeting, 'Obi-Wan').
 lex('I am not a myph', greeting, 'Unicorn').
 lex('Odin gave his eye to acquire knowledge...but I would give far more', greeting, 'Ragnar').
-lex('Hands down, this is the best day of my life', greeting, 'Snowman').
+% lex('Hands down, this is the best day of my life', greeting, 'Snowman').
 lex('Success is not final, failure is not fatal: it is the courage to continue that counts ', greeting, 'Winston').
+% How every hero can help
+lex('will give a Ghost', how_hero_can_help, 'John Snow').
+lex('will rise the North', how_hero_can_help, 'John Snow').
+lex('will rise the Night Watch', how_hero_can_help, 'John Snow').
+lex('will teach me how to use Force',how_hero_can_help,'Obi-Wan').
+lex('will find Yoda',how_hero_can_help,'Obi-Wan').
+lex('will find magic sword',how_hero_can_help,'Unicorn').
+lex('will rise Vikings',how_hero_can_help,'Ragnar').
+lex('will find a Great Drakkar', how_hero_can_help,'Ragnar').
+lex('will connect us',how_hero_can_help,'Winston').
+
+
+% Answers on something
+lex('Sorry,I can\'t help you', answer, help,bad).
+lex('I will help you',answer, help,good).
+
+% Syntax
+% lex(Phrase,reaction,Subject,Intention)
+lex('That is a great ', reaction,present, good).
+lex('I was dreaming about ', reaction,present, good).
+lex('I hate ', reaction,present, bad).
+lex('I very appreciate this', reaction,present, good).
+lex('Don\'t show me this', reaction,present, bad).
+lex('', reaction,help, bad).
+lex('', reaction,help, good).
+
 
 
 
@@ -193,17 +226,18 @@ lex('', adj, _, _).
 lex(rainy, adj, wapp, bad).
 lex(giggling, adj, happ, good).
 lex(cloudy, adj, wapp, good).
-lex(boring, adj, _, good).
-lex(funny, adj, _, good).
+lex(boring, adj, papp, good).
+lex(boring, adj, tapp, good).
+lex(funny, adj, tapp, good).
 lex(interesting, adj, papp, good).
 lex(interesting, adj, tapp, good).
 lex(galactic, adj, papp, good).
 lex(space, adj, papp, good).
 lex(medival, adj, papp, good).
-lex(lonely, adj, happ, good).
+lex(lonely, adj, papp, good).
 lex(angry, adj, happ, bad).
 lex(crazy, adj, happ, bad).
-lex(cute, adj, happ, good).
+lex(cute, adj, papp, good).
 lex('good-looking', adj, happ, good).
 lex(friendly, adj, happ, good).
 lex(graceful, adj, happ, good).
@@ -219,6 +253,9 @@ lex(crowded, adj, papp, bad).
 lex(famous, adj, _, good).
 lex(magical, adj, _, good).
 lex(quiet, adj, _, good).
+lex(tired, adj, happ, good).
+lex(tired, adj, happ, bad).
+
 % Format
 % lex(word, v, time, list_of_related_prepositions)
 % list_of_related_prepositions = [with,at, ...]

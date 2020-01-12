@@ -120,8 +120,10 @@ is_member_of(List,X):-
     \+member(X,List).
 
 % Capitilizing first letters of word, that goes after period
+% br stands for break line
 process_story([],[]).
 process_story(['.',Word|Story],['.',Capitilized|Other]):-
+    \+Word=br,
     fist_to_upper(Word,Capitilized),
 	process_story(Story, Other).
 
@@ -133,5 +135,12 @@ fist_to_upper(String, Capitilized):-
 	upcase_atom(FirstChar, Uppercased),
 	string_chars(Capitilized,[Uppercased|Last]).
 
+% writes a story, placing newlines in places of quotes
+tell_story(Story):-    
+    foreach(member(X,Story),
+          (X=br) -> nl;
+          (write(X),write(' ')))
+         .
+    
 
 

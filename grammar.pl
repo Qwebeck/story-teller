@@ -45,7 +45,7 @@ hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
 												   ['.'].
 
 % Event of other hero coming to main hero
-event(other_hero,GlobalMood,_Location,Hero,ConcretePlace,HeroMood)-->
+event(other_hero,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->
 	{writeln(['Place: ',ConcretePlace]),
 	 ConcretePlace = [Preposition,Place],
 	 writeln(['Enter event with',GlobalMood,Hero,ConcretePlace,HeroMood])
@@ -56,24 +56,31 @@ event(other_hero,GlobalMood,_Location,Hero,ConcretePlace,HeroMood)-->
 	['comes '],
 	[Preposition,Place],
 	[':'],
+	%br- indicates, that prolog should start here a new line  
+	[br],
 	['"'],
 	hero_speaks(AnotherHero,Hero,Asks),
-	ask_explanation(Asks,SubjectOfAsk),
-	['"."'],
+	ask_explanation(Asks,SubjectOfAsk,Hero,Location),
+	['.'],
+	[br],
+	['"'],
 	{writeln(['Enter hero reacts 1:',HeroMood,Asks,SubjectOfAsk, AnotherHero, AnswerTone])},
 	hero_reacts(HeroMood,Asks,SubjectOfAsk, AnotherHero, AnswerTone),
-	['"-says'],
+	['"-said'],
 	[Hero],
 	['.'],
+	[br],
 	{
 		writeln('Comes in block'),
 		% answer of main hero can choose mood of other hero on negative.
 		% but he can also stay in his normal mood
 	 	lex(AnotherHeroMood,mood,AnotherHeroIntention),
 		random_element([AnswerTone,AnotherHeroIntention],Tone),
-		
+		% Every reaction related to some subject of ask. 
 		% map answer tone to possible reactions
-		rand_word([reaction,Tone],0,Reaction)
+		writeln([SubjectOfAsk,Tone]),
+		rand_word([reaction,SubjectOfAsk,Tone],0,Reaction),
+		writeln('Exit from block')
 	},
 	['"'],
 	{writeln(['Params',AnotherHeroMood,Reaction, SubjectOfAsk,Hero])},
@@ -89,12 +96,12 @@ event(other_hero,GlobalMood,_Location,Hero,ConcretePlace,HeroMood)-->
 % Prints generic phrase cause by mood, and expand answer depends on topic.
 % Returns AnswerTone.
 hero_reacts(HeroMood,Abstract, Subject, AnswerTo, AnswerTone) --> 
+									{writeln(['Get in hero reacts',HeroMood,Abstract, Subject, AnswerTo, AnswerTone])},
 									{lex(HeroMood,mood,AnswerTone)},
 									replic(answer,AnswerTone),
 									[AnswerTo],
 									['.'],
-									expand_reaction(Abstract,Subject, HeroMood),
-									{writeln(['Get in hero reacts',HeroMood,Abstract, Subject, AnswerTo, AnswerTone])}.
+									expand_reaction(Abstract,Subject, HeroMood).
 
 
 % Expands reaction on present event. 
@@ -106,31 +113,62 @@ expand_reaction(present,Present,Mood) --> reaction_on_present(Mood),
 
 % Expands restment of other character on present given to him 
 expand_reaction(resentment,Present,_) --> ['That was brude from your side! I wasted a lot of time trying to find that'],
-										  [Present],
-										  !.
+										  [Present].
 
 expand_reaction(welcome_speech,Present,_) --> ['I knew you wanted this'],
 												[Present],
-												['.You are welcome.'],
-												!.
+												['.You are welcome.'].
+% His answer depends on his mood  
+expand_reaction(help,_,Mood) --> {
+								lex(Mood,mood,Intention),
+								rand_word([answer,help,Intention], 0, Answer)
+							},
+							[Answer].
+
+expand_reaction(_,_,_) --> [''].
+
 
 
 % Takes hero Mood. Returns phrase, that he can say having such mood.
 reaction_on_present(Mood) --> [Phrase],
 							{   
 								lex(Mood,mood,Tone),
-								rand_word([reaction_on_present,Tone],0,Phrase)
+								rand_word([reaction,present,Tone],0,Phrase)
 							}.
 
 % Explains what present someone presenting. Returns Present, which is an object. 
-ask_explanation(present,Present) --> [Phrase],
+ask_explanation(present,Present,_,_) --> [Phrase],
 							 {
 							   rand_word([present_phrase],0,Phrase)  
 							 },
 							 np(Present),
 							 [.].
 
-ask_explanation(_) --> [empty].
+ask_explanation(help, SubjectOfAsk, Hero, Location) --> {SubjectOfAsk=help},
+										{
+										   rand_word([help],0,HelpWithWhat),
+										   random_element(
+											   ['','I am in panic!',
+												'Help me!',
+												'I am so frustrated!',
+												'I don\'t know what to do'	   
+											   ], PanicPhrase)
+										},
+										[PanicPhrase],
+										explain_help(HelpWithWhat,Hero,Location).
+
+explain_help(someone_attacked,Hero,Location) --> antagonist_attacks(Location),
+											{
+												writeln(['Look for hero help',Hero,Location]),
+												rand_word([how_hero_can_help,Hero],0,HelpBy)
+											},
+											['.'],
+                                            ['He will be stopped only if you', HelpBy, '. Nobody other can\'t do that'].
+antagonist_attacks(Location) --> {
+									rand_word([antagonist],0,Antagonist),
+									rand_word([something_evil],0,Evil)
+								},
+								[Antagonist,'attacks',Location,'.','He wants to', Evil].
 
 % Returns text of greeting, and what other hero asks our Hero.
 hero_speaks(Hero, ToHero, Asks) -->  {

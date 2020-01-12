@@ -13,10 +13,11 @@ gen_s:-
 	),
 	story(Story,[]),
 	process_story(Story,ProcessedStory),
-	foreach(member(X,ProcessedStory),(
-		write(X),
-		write(' ')
-	)).
+	tell_story(ProcessedStory).
+	% foreach(member(X,ProcessedStory),(
+		% write(X),
+		% write(' ')
+	% )).
 
 
 
