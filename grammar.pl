@@ -47,12 +47,13 @@ hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
 												   hero_action,
 												   hero_location(Location,ConcretePlace),
 												   ['he was'],
-												   hero_mood(GlobalMood, HeroMood).
+												   hero_mood(GlobalMood, HeroMood),
+												   mood_reason(HeroMood).
 
 event(other_hero,GlobalMood,_Location,Hero,ConcretePlace,HeroMood)-->
 	['Suddenly'],
 	hero_mood(GlobalMood,_AnotherHeroMood),
-	hero(AnotherHero),
+	hero(no_adj, AnotherHero),
 	['comes in'],
 	[ConcretePlace],
 	['.'],
@@ -77,16 +78,20 @@ hero_reacts(HeroMood) --> {lex(HeroMood,mood,AnswerTone)},
 %replic(Hero,Asks)
 
 % Return mood of hero
-hero_mood(GlobalMood, HeroMood) --> mood(GlobalMood, HeroMood),
-									reason.
+hero_mood(GlobalMood, HeroMood) --> mood(GlobalMood, HeroMood).
 
-reason --> ['without reason'].
+% Reason of mood.
+mood_reason(_HeroMood) --> ['without reason'].
 
 % Return concrete location of hero
-hero_location(Location,ConcretePlace) --> prep(prp),
+hero_location(Location,ConcretePlace) --> [Preposition],
 										adj(papp),
 										place(Location, ConcretePlace),
-										[.].
+										[.],
+										{
+											lex(ConcretePlace,loc_prep,ProperPrepositions),
+											random_element(ProperPrepositions,Preposition)
+										}.
 
 
 hero_action --> ['was'],
@@ -98,10 +103,14 @@ hero_action --> ['was'],
 place_descr(Mood, Location) --> weather(Mood),
 								{(var(Mood)->Mood=good;
 								 true)},
-								prep(prp),
+								[Preposition],
 								adj(papp),
 								place(Location),
-								['.'].
+								['.'],
+								{	
+									lex(Location,loc_prep,ProperPrepositions),
+									random_element(ProperPrepositions,Preposition)
+								}.
 			 
 
 % Return type of weather outside. 
@@ -135,9 +144,12 @@ v(GrammarForm,Intention) --> {rand_lexem([v,GrammarForm,_,Intention], 0, lex(Wor
 		connect_verb_prep(Word,PrepositionList,Result)},
 		Result.			
 
+hero(no_adj, Hero) -->  [Hero],
+						{rand_lexem([hero],0,lex(Hero,_))}.
+
 hero(Hero) --> adj(happ),
-		[Hero],
-		{rand_lexem([hero],0,lex(Hero,_))}.
+			   [Hero],
+			   {rand_lexem([hero],0,lex(Hero,_))}.
 
 replic(Type,Asks) --> [Word],
 				{

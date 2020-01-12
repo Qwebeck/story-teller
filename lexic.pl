@@ -1,8 +1,17 @@
 :-dynamic lex/3.
 % Helpful predicates
 % Dynamicaly creates connections at the beggining of story, between concretelocations and prepositions
-location_preposition([hall, forge, cabinet, bathroom,gym,tent,tavern, pub, prison,cave, 'dwarf hall'], [in, inside, at]).
-location_preposition(['fallen tree',spaceship,lodon, edinburg, 'horse back'], [on,under]).
+location_preposition(
+    [hall, forge, cabinet, bathroom,gym, tent, tavern, pub, prison,cave, 'dwarf hall',castle,
+    forest,
+    london,
+    mountains,
+    britan], 
+    [in, inside, at]).
+
+
+
+location_preposition(['fallen tree',spaceship,lodon, edinburg, 'horse back',bridge], [on,under]).
 
 
 
