@@ -1,6 +1,13 @@
 % Utils to work with grammar:
 % random_element - choose random element from list
-% random_word - choose random word from 
+% random_word - choose random word from knowledge base, that satisfy required conditions 
+% random_clause - choose random clause from knowledge base
+% insert - inserts element in List
+% remove_diff_list_from_clause - remove placeholders for differential list, 
+% for later usage of clause in differential list
+% connect_loc_prep - create records of form lex(Loaction,loc_prep,AllowedPrepositions) 
+% for provided locations in knowledge base.   
+% process_story - capitilize first leters in words in given story
 
 random_element(List,Element):-
 	length(List,L),
@@ -16,19 +23,11 @@ insert(Element, I, [H|T], [H|NT]) :-
  
 
 
-% Wrapper around rand_lexem
+% Wrapper around rand_lexem, that returns concrete word 
 rand_word(IgnoreParamsList, GoalPos, Result):-   	
-	% insert(_,GoalPos,IgnoreParamsList,NewPred),
-    % 	Template =.. [lex|NewPred],
-	% bagof(Template,IgnoreParamsList^Template, PossibleLexems),
-	% length(PossibleLexems, L),
-	% random(0, L, I),
-	% nth0(I, PossibleLexems, Lexem),
-   
     rand_lexem(IgnoreParamsList, GoalPos, Lexem),
 	Lexem =.. [lex|Params],
     nth0(GoalPos,Params,Result).
-    % writeln(['Rand word', Result]).
 
 % choose random lexem , from lexems that have same 
 rand_lexem(IgnoreParamsList, GoalPos, Result):-   	
@@ -46,7 +45,8 @@ connect_verb_prep(Verb,PrepList,[Verb,Prep]):-
 	nth0(I,PrepList,Prep).
 
 % Don't use aggregate, because prolog goes through all possibilities, while counting with aggregate. 
-% The reason is - is that aggregate - is an implemantation of bagof, an bagof looks untill he won't fail.
+% The reason is - is that aggregate - is an implemantation of bagof, and bagof looks untill he won't fail.
+% Because of that in the end we will get a way more bigger number that we wanted 
 random_grammar_clause_v2(Predicate, NumberOfPossibilities, Args, Result):-
 	length(Pl, 2),
 	append(Args,Pl,Arglist),
@@ -66,16 +66,14 @@ random_grammar_clause(ArgCount, Predicate, NumberOfPredicates, Result):-
 	C is ArgCount + 2,
 	length(Args, C),
 	GrammarC =.. [Predicate|Args],
-	% Don't use it, because prolog goes through all possibilities, while counting with aggregate. 
-	% The reason is - is that aggregate - is an implemantation of bagof, an bagof looks untill he won't fail.
-	% aggregate(count,Args^GrammarC,NumberOfPossibilities),
-	% writeln(NumberOfPossibilities),
 	random_between(1,NumberOfPredicates, I),	
 	writeln(I),
 	nth_clause(GrammarC, I, R),writeln([GrammarC]),clause(ClauseWithDiffList, _, R),
 	writeln('Should enter remove'),
 	remove_diff_list_from_clause(ClauseWithDiffList,Result).
 
+% Remove placeholders for Differential list from clause,
+% because it needed to later use this clause in grammar clause
 remove_diff_list_from_clause(ClauseWithDiff, Result):-
 	writeln('Enter remove'),
 	ClauseWithDiff =.. [Predicate|Params],
@@ -85,6 +83,8 @@ remove_diff_list_from_clause(ClauseWithDiff, Result):-
 	writeln(ParamsWithoutDiffList),	
 	Result =.. [Predicate|ParamsWithoutDiffList].
 
+% Doing the same things as remove_diff_list_from_clause/2,
+% but instead of empty args in clause, places provided Args.
 remove_diff_list_from_clause(ClauseWithDiff, Args,Result):-
 	ClauseWithDiff =.. [Predicate|Params],
 	length(DiffList, 2),
@@ -92,6 +92,8 @@ remove_diff_list_from_clause(ClauseWithDiff, Args,Result):-
 	ParamsWithoutDiffList = Args,
 	Result =.. [Predicate|Args].
 
+
+% Connect prepositions with places, where they can be used 
 connect_loc_prep([],_).
 
 connect_loc_prep([Loc|Locations],Prepositions):-
@@ -101,7 +103,6 @@ connect_loc_prep([Loc|Locations],Prepositions):-
     ),
     connect_loc_prep(Locations,Prepositions).   
 
-
 % Add preposition to list of available prepositions for place
 add_prepositions(Loc,Prepositions):-
     lex(Loc,loc_prep,ExPrep),
@@ -110,6 +111,7 @@ add_prepositions(Loc,Prepositions):-
     append(ExPrep,FilteredPrep,New),
     assertz(lex(Loc,loc_prep,New)).
 
+% Used in include to check if element is a memeber of given list
 is_member_of(List,X):-
     var(X),
     X = is_member_of(List).
