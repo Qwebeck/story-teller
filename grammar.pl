@@ -32,8 +32,7 @@ introduction(start_in_place) -->
                                ],
                                Event)
 	},
-    Event.
-							
+	Event.							
 % Return hero name, and his concrete location
 hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
 												   hero_action(GlobalMood),
@@ -52,7 +51,7 @@ event(other_hero,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->
 	},
 	['Suddenly'],
 	mood(GlobalMood,AnotherHeroMood),
-	hero(no_adj, AnotherHero),
+	hero(no_adj, Hero,AnotherHero),
 	['comes '],
 	[Preposition,Place],
 	[':'],
@@ -86,12 +85,16 @@ event(other_hero,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->
 	{writeln(['Params',AnotherHeroMood,Reaction, SubjectOfAsk,Hero])},
 	hero_reacts(AnotherHeroMood,Reaction, SubjectOfAsk,Hero,_),
 	['"-answer'],
-	[AnotherHero].
+	[AnotherHero],
+	{random_element([good,bad],Final)},
+	[br],
+	ending(Asks, Final, Hero,AnotherHero,Location).
 
-% Currently unsed event. Here other hero will come and stole something from main hero
+ending(help, good,Hero,AnotherHero, Location)-->[Hero],['completed his promise and helped'],[AnotherHero,'to save',Location].
+ending(help, bad,Hero,AnotherHero, Location)-->[Hero],['tried to help '],[AnotherHero,'to save ',Location, ' but he met with failure'].
+ending(_, _,_,_, _) --> ['The end.'].
+% Currently unsed event, but can be implemented in code.
 %event(robbery,_GM,_Location,_Hero,_ConcretePlace,_HeroMood)-->[robbery].
-
-
 % Takes Hero mood , abstract theme of ask(present, help,....), and concret subject of ask.  
 % Prints generic phrase cause by mood, and expand answer depends on topic.
 % Returns AnswerTone.
@@ -190,11 +193,6 @@ hero_speaks(Hero, ToHero, Asks) -->  {
 
 
 
-
-% % Return mood of hero 
-% mood(GlobalMood, HeroMood) --> mood(GlobalMood, HeroMood).
-
-
 % Return concrete location of hero
 % Concrete place is a of preposition and place
 hero_location(Location,ConcretePlace) --> [Preposition],
@@ -273,7 +271,7 @@ period --> [Word],{rand_word([period],0,Word)}.
 
 % Location in place is the same is place.
 place(Location) --> [Word],{rand_word([place,_],0,Word),Location = Word}.
-% Returns possible location of hero in place he now.
+% Returns concrete location of hero in his current place. It could be room, hall, etc
 place(GlobalLocation,ConcretePlace) --> [ConcretePlace],
 										{
 											rand_lexem([GlobalLocation,place],2,lex(_,_,Places)),
@@ -287,8 +285,14 @@ v(GrammarForm,Intention) --> {rand_lexem([v,GrammarForm,_,Intention], 0, lex(Wor
 		connect_verb_prep(Word,PrepositionList,Result)},
 		Result.			
 
-hero(no_adj, Hero) -->  [Hero],
-						{rand_lexem([hero],0,lex(Hero,_))}.
+
+
+
+
+hero(no_adj, ExistingHero, Hero) -->  [Hero],
+									{
+										choose_diferent([hero],0,ExistingHero,Hero)
+									}.
 
 hero(Hero) --> adj(happ),
 			   [Hero],

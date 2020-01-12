@@ -1,4 +1,5 @@
 % Utils to work with grammar:
+% choose_different - choose result different from existing
 % random_element - choose random element from list
 % random_word - choose random word from knowledge base, that satisfy required conditions 
 % random_clause - choose random clause from knowledge base
@@ -8,6 +9,17 @@
 % connect_loc_prep - create records of form lex(Loaction,loc_prep,AllowedPrepositions) 
 % for provided locations in knowledge base.   
 % process_story - capitilize first leters in words in given story
+
+
+% Generic method, to randomly choose  Result different from Existing.
+choose_diferent(ArgListWithoutGoal, GoalPos, Existing, Result):-
+	insert(Goal, GoalPos, ArgListWithoutGoal, LexemArgs),
+	RandomLexem =.. [lex|LexemArgs],
+	rand_lexem(ArgListWithoutGoal,GoalPos,RandomLexem),
+	(\+Goal=Existing->Result=Goal;
+	 choose_diferent(ArgListWithoutGoal, GoalPos, Existing, Result)).
+
+
 
 random_element(List,Element):-
 	length(List,L),
@@ -142,5 +154,6 @@ tell_story(Story):-
           (write(X),write(' ')))
          .
     
+
 
 
