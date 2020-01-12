@@ -9,7 +9,7 @@
 % connect_loc_prep - create records of form lex(Loaction,loc_prep,AllowedPrepositions) 
 % for provided locations in knowledge base.   
 % process_story - capitilize first leters in words in given story
-
+% choose article - choose article for noun
 
 % Generic method, to randomly choose  Result different from Existing.
 choose_diferent(ArgListWithoutGoal, GoalPos, Existing, Result):-
@@ -151,9 +151,13 @@ fist_to_upper(String, Capitilized):-
 tell_story(Story):-    
     foreach(member(X,Story),
           (X=br) -> nl;
-          (write(X),write(' ')))
-         .
+          (write(X),write(' '))).        
     
-
+% choose article for noun
+choose_article(Word,'an'):-
+            string_chars(Word, [First|_]),
+            vowel(First).
+choose_article(_,'a').
+            
 
 

@@ -14,10 +14,7 @@ gen_s:-
 	story(Story,[]),
 	process_story(Story,ProcessedStory),
 	tell_story(ProcessedStory).
-	% foreach(member(X,ProcessedStory),(
-		% write(X),
-		% write(' ')
-	% )).
+
 
 
 

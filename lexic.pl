@@ -13,6 +13,12 @@ location_preposition([mountains, forest], [under]).
 
 location_preposition(['fallen tree', spaceship, 'horse back', 'cargo bay'], [on, under]).
 
+vowel(a).
+vowel(e).
+vowel(u).
+vowel(i).
+vowel(o).
+
 
 
                 
@@ -90,11 +96,11 @@ lex(welcome_speech, reaction, good).
 
 % Replices and their meanings
 lex('I need your help, ', replic, help).
-%lex('I have something for you', replic, present).
+lex('I have something for you', replic, present).
 %lex('I bring bad news with me', replic,bad_news).
 %lex('I here to tell you something good',replic, good_news).
 lex('I need you!',replic, help).
-%lex('It is a good day for you!', replic, present).
+lex('It is a good day for you!', replic, present).
 %lex('It is a good day for you!',replic,good_news).
 
 % Present phrases

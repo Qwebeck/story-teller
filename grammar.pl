@@ -12,8 +12,8 @@ story -->
     { introduction_number(N),
       random_grammar_clause_v2(introduction, N, [_], Introduction)
     },
-	Introduction,
-	{writeln('End Introduction')}. 
+	Introduction.
+	% {writeln('End Introduction')}. 
 
 introduction(start_in_place) -->
     place_descr(GlobalMood, Location),
@@ -45,9 +45,10 @@ hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
 
 % Event of other hero coming to main hero
 event(other_hero,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->
-	{writeln(['Place: ',ConcretePlace]),
-	 ConcretePlace = [Preposition,Place],
-	 writeln(['Enter event with',GlobalMood,Hero,ConcretePlace,HeroMood])
+	% {writeln(['Place: ',ConcretePlace]),
+	{
+	 ConcretePlace = [Preposition,Place]
+	%  writeln(['Enter event with',GlobalMood,Hero,ConcretePlace,HeroMood])
 	},
 	['Suddenly'],
 	mood(GlobalMood,AnotherHeroMood),
@@ -63,26 +64,27 @@ event(other_hero,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->
 	['.'],
 	[br],
 	['"'],
-	{writeln(['Enter hero reacts 1:',HeroMood,Asks,SubjectOfAsk, AnotherHero, AnswerTone])},
+	% {writeln(['Enter hero reacts 1:',HeroMood,Asks,SubjectOfAsk, AnotherHero, AnswerTone])},
 	hero_reacts(HeroMood,Asks,SubjectOfAsk, AnotherHero, AnswerTone),
 	['"-said'],
 	[Hero],
 	['.'],
 	[br],
 	{
-		writeln('Comes in block'),
+		% writeln('Comes in block'),
 		% answer of main hero can choose mood of other hero on negative.
 		% but he can also stay in his normal mood
-	 	lex(AnotherHeroMood,mood,AnotherHeroIntention),
+		lex(AnotherHeroMood,mood,AnotherHeroIntention),
+		% writeln([AnotherHeroMood,AnotherHeroIntention]), 
 		random_element([AnswerTone,AnotherHeroIntention],Tone),
 		% Every reaction related to some subject of ask. 
 		% map answer tone to possible reactions
-		writeln([SubjectOfAsk,Tone]),
-		rand_word([reaction,SubjectOfAsk,Tone],0,Reaction),
-		writeln('Exit from block')
+		% writeln([Asks,Tone]),
+		rand_word([reaction,Asks,Tone],0,Reaction)
+		% writeln('Exit from block')
 	},
 	['"'],
-	{writeln(['Params',AnotherHeroMood,Reaction, SubjectOfAsk,Hero])},
+	% {writeln(['Params',AnotherHeroMood,Reaction, SubjectOfAsk,Hero])},
 	hero_reacts(AnotherHeroMood,Reaction, SubjectOfAsk,Hero,_),
 	['"-answer'],
 	[AnotherHero],
@@ -99,7 +101,7 @@ ending(_, _,_,_, _) --> ['The end.'].
 % Prints generic phrase cause by mood, and expand answer depends on topic.
 % Returns AnswerTone.
 hero_reacts(HeroMood,Abstract, Subject, AnswerTo, AnswerTone) --> 
-									{writeln(['Get in hero reacts',HeroMood,Abstract, Subject, AnswerTo, AnswerTone])},
+									% {writeln(['Get in hero reacts',HeroMood,Abstract, Subject, AnswerTo, AnswerTone])},
 									{lex(HeroMood,mood,AnswerTone)},
 									replic(answer,AnswerTone),
 									[AnswerTo],
@@ -111,7 +113,7 @@ hero_reacts(HeroMood,Abstract, Subject, AnswerTo, AnswerTone) -->
 % Here character in some way reacts on what other herobring to him
 expand_reaction(present,Present,Mood) --> reaction_on_present(Mood),
 										  [Present],
-										  {writeln(['Reaction',Present,Mood])},
+										%   {writeln(['Reaction',Present,Mood])},
 										  !.
 
 % Expands restment of other character on present given to him 
@@ -162,7 +164,7 @@ ask_explanation(help, SubjectOfAsk, Hero, Location) --> {SubjectOfAsk=help},
 
 explain_help(someone_attacked,Hero,Location) --> antagonist_attacks(Location),
 											{
-												writeln(['Look for hero help',Hero,Location]),
+												% writeln(['Look for hero help',Hero,Location]),
 												rand_word([how_hero_can_help,Hero],0,HelpBy)
 											},
 											['.'],
@@ -241,7 +243,7 @@ place_descr(Mood, Location) --> weather(Mood),
 			 
 
 % Return type of weather outside. 
-weather(Type) --> ['It is a'],
+weather(Type) --> ['It is'],
 			      adj(wapp,Type),
 			      period.
 
@@ -252,18 +254,21 @@ mood_reason(HeroMood) --> [Word],{
 
 							}.
 
+
+
 % Returns target noun
-np(Target) --> article,
+np(Target) --> [Article],
 		adj(tapp),
-		n(Target).	
+		n(Target),
+		{choose_article(Target,Article)}.	
 		
 
-article --> [Word],{rand_word([article],0,Word)}.
-adj(Target) --> [Word],{rand_word([adj,Target,_],0,Word)}.
+% article --> [Word],{rand_word([article],0,Word)}.
+adj(Target) --> [Article,Word],{rand_word([adj,Target,_],0,Word),choose_article(Word,Article)}.
 % Returns random weather and mood associated with it
-adj(Target,Mood) --> [Word],{rand_lexem([adj,Target,_],0,lex(Word,_,_,Mood))}.
+adj(Target,Mood) --> [Article,Word],{rand_lexem([adj,Target,_],0,lex(Word,_,_,Mood)),choose_article(Word,Article)}.
 n --> [Word],{rand_word([n, _],0,Word)}.
-% Returns target, that was presented
+% Returns target. Same as word
 n(Target) --> [Word],{rand_word([n, _],0,Word),Target=Word}.
 prep --> [Word],{rand_word([prep,_],0,Word)}.
 prep(Target) --> [Word],{rand_word([prep,Target],0,Word)}.
