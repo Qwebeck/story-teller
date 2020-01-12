@@ -1,3 +1,4 @@
+:- consult('utils').
 :-dynamic lex/3.
 % Helpful predicates
 % Dynamicaly creates connections at the beggining of story, between concretelocations and prepositions
@@ -13,33 +14,9 @@ location_preposition(['Britan','Edinburg'],[in]).
 
 location_preposition([mountains, forest], [under]).
 
-location_preposition(['fallen tree',spaceship, 'horse back',bridge], [on,under]).
+location_preposition(['fallen tree',spaceship, 'horse back','cargo bay'], [on,under]).
 
 
-connect_loc_prep([],_).
-
-connect_loc_prep([Loc|Locations],Prepositions):-
-    (\+lex(Loc,loc_prep,_) ->
-    assertz(lex(Loc,loc_prep,Prepositions));
-    add_prepositions(Loc,Prepositions)
-    ),
-    connect_loc_prep(Locations,Prepositions).   
-
-
-% Add preposition to list of available prepositions for place
-add_prepositions(Loc,Prepositions):-
-    lex(Loc,loc_prep,ExPrep),
-    retractall(lex(Loc,loc_prep,_)),
-    include(is_member_of(ExPrep), Prepositions, FilteredPrep),
-    append(ExPrep,FilteredPrep,New),
-    assertz(lex(Loc,loc_prep,New)).
-
-is_member_of(List,X):-
-    var(X),
-    X = is_member_of(List).
-
-is_member_of(List,X):-
-    \+member(X,List).
 
                 
 % Times 
@@ -79,10 +56,10 @@ lex(someone_attacked,help).
 lex(have_no_money,help).
 lex(have_bad_mood,help).
 % Present phrases
-lex('I found', present_phrase).
-lex('I bought', present_phrase).
-lex('I bring', present_phrase).
-lex('I decided to buy you a ', present_phrase).
+lex('I found ', present_phrase).
+lex('I bought ', present_phrase).
+lex('I bring ', present_phrase).
+lex('I decided to buy you', present_phrase).
 
 % Reasons of mood
 lex('without reason',reas_mood,_).
@@ -93,6 +70,19 @@ lex('because the life is great', reas_mood, good).
 lex('because people are angry', reas_mood, bad).
 lex('because he is hungry', reas_mood, bad).
 
+% Possible reactions depending on tongue 
+lex(resentment,reaction,bad).
+lex(welcome_speech, reaction,good).
+
+
+
+% Syntax
+% lex(Phrase,reaction_on_present,Intention)
+lex('That is a great ',reaction_on_present,good).
+lex('I was dreaming about ',reaction_on_present,good).
+lex('I hate ',reaction_on_present,bad).
+lex('I very appreciate this', reaction_on_present,good).
+lex('Don\'t show me this', reaction_on_present, bad).
 
 % Replices and their meanings
 %lex('I need your help, ', replic, help).
@@ -108,7 +98,11 @@ lex('It is a good day for you!',replic,present).
 
 % Answer
 lex('Doesn\'t matter',answer,bad).
+lex('I don\'t care',answer,bad).
+lex('I have more important things',answer,bad).
 lex('Great, thank you!',answer,good).
+lex('Glad to hear it.',answer,good).
+
 
 
 
@@ -117,7 +111,7 @@ lex('Great, thank you!',answer,good).
 % papp - place adjectives could be applied 
 %Places
 lex(castle, place,[hall, forge, cabinet, bathroom]).
-lex(spaceship,place,[bridge, gym]).
+lex(spaceship,place,['cargo bay', chamber]).
 lex(forest,place,['fallen tree', tent]).
 lex('London',place, [cabinet, tavern, pub, prison]).
 lex(mountains,place,[cave, 'dwarf hall']).
@@ -182,12 +176,12 @@ lex('interested',participle,happ).
 % Greetings 
 % Specific greetings for every character
 
-lex('I know something.',greeting, 'John Snow').
-lex('Use the Force,', greeting,'Obi-Wan').
-lex('I am not a myph.',greeting,'Unicorn').
-lex('Odin gave his eye to acquire knowledge...but I would give far more.',greeting,'Ragnar').
-lex('Hands down, this is the best day of my life.',greeting,'Snowman').
-lex('Success is not final, failure is not fatal: it is the courage to continue that counts. ',greeting,'Winston').
+lex('I know something',greeting, 'John Snow').
+lex('Use the Force', greeting,'Obi-Wan').
+lex('I am not a myph',greeting,'Unicorn').
+lex('Odin gave his eye to acquire knowledge...but I would give far more',greeting,'Ragnar').
+lex('Hands down, this is the best day of my life',greeting,'Snowman').
+lex('Success is not final, failure is not fatal: it is the courage to continue that counts ',greeting,'Winston').
 
 
 
@@ -245,4 +239,9 @@ lex('sleep',v,infinitive,[under],good).
 lex('roaring',v,continous,[at],bad).
 lex('killing',v,continous,[''],bad).
 lex('robing',v,continous,[the],bad).
+lex('bying',v,continous,[''],_).
+lex('hiding',v,continous,[''],_).
+lex('selling',v,continous,[''],_).
+lex('shooting',v,continous,[''],bad).
+lex('painting',v,continous,[''],good).
 

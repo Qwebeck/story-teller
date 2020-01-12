@@ -1,8 +1,9 @@
-:- consult(lexic).
+:- consult('lexic').
+
 :- use_module(library(aggregate)).
 :- (dynamic calls/1).
 
-max_calls(4).
+
 
 % Goals:
 % Add relations between phrases.
@@ -10,15 +11,13 @@ max_calls(4).
 % Add UI, that allow user to add his own clausules: name, phrase, ....
 % For safety reasons, write a predicate, that connects all places with predicates
 introduction_number(1).
-event_number(2).
+event_number(1).
 
 story -->
     { introduction_number(N),
       random_grammar_clause_v2(introduction, N, [_], Introduction)
     },
-    Introduction,
-    { writeln('Introduction End')
-    }. 
+    Introduction. 
 
 %
 % It was sunny outside, so his mood was good.
@@ -30,7 +29,7 @@ story -->
 introduction(start_in_place) -->
     place_descr(GlobalMood, Location),
     hero_descr(GlobalMood, Location, Hero, ConcretePlace, HeroMood),
-    { writeln([GlobalMood, Location, Hero, ConcretePlace, HeroMood]),
+    {
       event_number(N),
       random_grammar_clause_v2(event,
                                N,
@@ -42,17 +41,13 @@ introduction(start_in_place) -->
                                  ConcretePlace,
                                  HeroMood
                                ],
-                               Event),
-      writeln(Event)
-    },
-    Event,
-    { writeln('End event')
-    }.
-
+                               Event)
+	},
+    Event.
 							
 % Return hero name, and his concrete location
 hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
-												   hero_action,
+												   hero_action(GlobalMood),
 												   hero_location(Location,ConcretePlace),
 												   ['.'],
 												   ['he was'],
@@ -62,7 +57,7 @@ hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
 
 event(other_hero,GlobalMood,_Location,Hero,ConcretePlace,HeroMood)-->
 	['Suddenly'],
-	hero_mood(GlobalMood,_AnotherHeroMood),
+	hero_mood(GlobalMood,AnotherHeroMood),
 	hero(no_adj, AnotherHero),
 	['comes in'],
 	[ConcretePlace],
@@ -70,31 +65,81 @@ event(other_hero,GlobalMood,_Location,Hero,ConcretePlace,HeroMood)-->
 	['"'],
 	hero_speaks(AnotherHero,Hero,Asks),
 	ask_explanation(Asks,SubjectOfAsk),
+	['"."'],
+	hero_reacts(HeroMood,Asks,SubjectOfAsk, AnotherHero, AnswerTone),
+	['"-says'],
+	[Hero],
+	['.'],
+	{
+		% answer of main hero can choose mood of other hero on negative.
+		% but he can also stay in his normal mood
+		random_element([AnswerTone,AnotherHeroMood],Tone),
+		% map answer tone to possible reactions
+		rand_word([reaction,Tone],0,Reaction)
+	},
 	['"'],
-	hero_reacts(HeroMood).
+	hero_reacts(AnotherHeroMood,Reaction, SubjectOfAsk,Hero,_),
+	['"-answer'],
+	[AnotherHero].
 	
-event(robbery,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->[robbery].
+%event(robbery,_GM,_Location,_Hero,_ConcretePlace,_HeroMood)-->[robbery].
 
 
+% Takes Hero mood , abstract theme of ask(present, help,....), and concret subject of ask.  
+% Prints generic phrase cause by mood, and expand answer depends on topic.
+% Returns AnswerTone.
+hero_reacts(HeroMood,Abstract, Subject, AnswerTo, AnswerTone) --> 
+									{lex(HeroMood,mood,AnswerTone)},
+									replic(answer,AnswerTone),
+									[AnswerTo],
+									['.'],
+									expand_reaction(Abstract,Subject, HeroMood).
 
+expand_reaction(present,Present,Mood) --> reaction_on_present(Mood),
+										  [Present].
+
+expand_reaction(resentment,Present,_) --> ['That was brude from your side! I wasted a lot of time trying to find that'],
+										  [Present].
+
+expand_reaction(welcome_speech,Present,_) --> ['I knew you wanted this'],
+												[Present],
+												['.You are welcome.'].
+
+
+reaction_on_present(Mood) --> [Phrase],
+							{   
+								lex(Mood,mood,Tone),
+								rand_word([reaction_on_present,Tone],0,Phrase)
+							}.
 % Explains what  present someone presenting. Returns given present. 
 ask_explanation(present,Present) --> [Phrase],
 							 {
 							   rand_word([present_phrase],0,Phrase)  
 							 },
-							 np(Present).
+							 np(Present),
+							 [.].
 
 ask_explanation(_) --> [empty].
 
 % Returns text of greeting, and ask of Hero.
-hero_speaks(Hero, ToHero, Asks) -->  greeting(Hero),
+hero_speaks(Hero, ToHero, Asks) -->  {
+								 	 	random_element(['','Hi',
+											 			'Hello',
+														'Good afternoon',
+														'Good to see you again',
+														'Well met',
+														'Good day'],GPh)
+									},
+									 [GPh],
+									 [','],
 									 [ToHero],
 									 ['.'],
-							     	 replic(replic,Asks).
+									 greeting(Hero),
+									 ['.'],
+									 replic(replic,Asks),
+									  ['.'].
 
-% Takes as arguments Hero, and his mood
-hero_reacts(HeroMood) --> {lex(HeroMood,mood,AnswerTone)},
-						  replic(answer,AnswerTone).
+
 
 % Return replic of hero as text, and Meaning of replic.
 %replic(Hero,Asks)
@@ -102,14 +147,12 @@ hero_reacts(HeroMood) --> {lex(HeroMood,mood,AnswerTone)},
 % Return mood of hero
 hero_mood(GlobalMood, HeroMood) --> mood(GlobalMood, HeroMood).
 
-% Reason of mood.
 
 % Return concrete location of hero
 hero_location(Location,ConcretePlace) --> [Preposition],
 										adj(papp),
 										place(Location, ConcretePlace),
 										{
-											writeln(ConcretePlace),
 											lex(ConcretePlace,loc_prep,ProperPrepositions),
 											random_element(ProperPrepositions,Preposition)
 
@@ -120,23 +163,23 @@ hero_location(Location,ConcretePlace) --> prep(prp),
 										  adj(papp),
 										  place(Location, ConcretePlace).
 
-hero_action --> ['was'],
-				v(continous),
+hero_action(Mood) --> ['was'],
+				v(continous,Mood),
 				n.
 
 % Return Mood, Location to introduction
+% Firstly tries, to choose mood, asociating it with weather. 
+% In case of failure randomly choose between good and bad.
 place_descr(Mood, Location) --> weather(Mood),
-								{(var(Mood)->Mood=good;
+								{(var(Mood)->random_element([bad,good],Mood);
 								 true)},
 								[Preposition],
 								adj(papp),
 								place(Location),
 								['.'],
 								{	
-									writeln(Location),
 									lex(Location,loc_prep,ProperPrepositions),
-									random_element(ProperPrepositions,Preposition),
-									writeln(Preposition)
+									random_element(ProperPrepositions,Preposition)
 								}.
 
 % Worksin case if location doesn't connect with any prepositions and first predicate will crash
@@ -209,101 +252,4 @@ replic(Type,Asks) --> [Word],
 mood(GMood,HeroMood) --> [HeroMood],{rand_word([mood,GMood],0,HeroMood)}.
 % Return greeting, that characterical for Hero
 greeting(Hero) --> [Greeting],{rand_word([greeting, Hero],0,Greeting)}.
-
-
-
-
-
-random_element(List,Element):-
-	length(List,L),
-	random(0, L, I),
-	nth0(I,List,Element).
-
-
-% insert(Element,0,L,[Element|L]). % ok
-% insert(Element,Pos,[E|L],[E|ZL]):- % you forgot to cons back E
-%     Pos1 is Pos-1,
-%     insert(Element,Pos1,L,ZL). % done, append is useless
-%     %append(E,ZL1,ZL).
-
-
-insert(Element, 0, List, [Element|List]).
-insert(Element, I, [H|T], [H|NT]) :-
-    I > 0,
-    NI is I - 1,
-    insert(Element, NI, T, NT).
- 
-
-
-%% Wrapper around get_rand_lexem, that takes a list of ignore parametrs, as argument.
-rand_word(IgnoreParamsList, GoalPos, Result):-   	
-	insert(_,GoalPos,IgnoreParamsList,NewPred),
-    	Template =.. [lex|NewPred],
-	bagof(Template,IgnoreParamsList^Template, PossibleLexems),
-	length(PossibleLexems, L),
-	random(0, L, I),
-	nth0(I, PossibleLexems, Lexem),
-	Lexem =.. [lex|Params],
-	nth0(GoalPos,Params,Result).
-
-rand_lexem(IgnoreParamsList, GoalPos, Result):-   	
-	insert(_,GoalPos,IgnoreParamsList,NewPred),
-    	Template =.. [lex|NewPred],
-	bagof(Template,IgnoreParamsList^Template, PossibleLexems),
-	length(PossibleLexems, L),
-	random(0, L, I),
-	nth0(I, PossibleLexems, Result).
-
-
-connect_verb_prep(Verb,PrepList,[Verb,Prep]):-
-	length(PrepList,L),
-	random(0,L,I),
-	nth0(I,PrepList,Prep).
-
-% Don't use aggregate, because prolog goes through all possibilities, while counting with aggregate. 
-% The reason is - is that aggregate - is an implemantation of bagof, an bagof looks untill he won't fail.
-random_grammar_clause_v2(Predicate, NumberOfPossibilities, Args, Result):-
-	length(Pl, 2),
-	append(Args,Pl,Arglist),
-	GrammarC =.. [Predicate|Arglist],
-	% aggregate(count,Args^GrammarC,NumberOfPossibilities),
-	random_between(1,NumberOfPossibilities, I),	
-	nth_clause(GrammarC, I, R), clause(ClauseWithDiffList, _, R),
-	remove_diff_list_from_clause(ClauseWithDiffList, Args,Result).
-
-
-
-
-%% Returns random grammar clause
-%% ArgCount - number of arguments, grammmar clause accepts (without undeneath differential list)
-%% Clause - name of grammar clause 
-random_grammar_clause(ArgCount, Predicate, NumberOfPredicates, Result):-
-	C is ArgCount + 2,
-	length(Args, C),
-	GrammarC =.. [Predicate|Args],
-	% Don't use it, because prolog goes through all possibilities, while counting with aggregate. 
-	% The reason is - is that aggregate - is an implemantation of bagof, an bagof looks untill he won't fail.
-	% aggregate(count,Args^GrammarC,NumberOfPossibilities),
-	% writeln(NumberOfPossibilities),
-	random_between(1,NumberOfPredicates, I),	
-	writeln(I),
-	nth_clause(GrammarC, I, R),writeln([GrammarC]),clause(ClauseWithDiffList, _, R),
-	writeln('Should enter remove'),
-	remove_diff_list_from_clause(ClauseWithDiffList,Result).
-
-remove_diff_list_from_clause(ClauseWithDiff, Result):-
-	writeln('Enter remove'),
-	ClauseWithDiff =.. [Predicate|Params],
-	writeln(['Here',ParamsWithoutDiffList]),	
-	length(DiffList, 2),
-	append(ParamsWithoutDiffList, DiffList, Params),
-	writeln(ParamsWithoutDiffList),	
-	Result =.. [Predicate|ParamsWithoutDiffList].
-
-remove_diff_list_from_clause(ClauseWithDiff, Args,Result):-
-	ClauseWithDiff =.. [Predicate|Params],
-	length(DiffList, 2),
-	append(ParamsWithoutDiffList, DiffList, Params),
-	ParamsWithoutDiffList = Args,
-	Result =.. [Predicate|Args].
 
