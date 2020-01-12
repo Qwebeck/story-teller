@@ -10,6 +10,7 @@ max_calls(4).
 % Add UI, that allow user to add his own clausules: name, phrase, ....
 introduction_number(1).
 event_number(2).
+
 story --> 
 		 {
 			introduction_number(N),
@@ -40,32 +41,25 @@ introduction(start_in_place) --> place_descr(GlobalMood,Location),
 								Event,
 								{writeln('End event')}.
 
-introduction(start_from_action) --> place_descr(GlobalMood,Location),{
-	writeln([GlobalMood, Location, Hero,ConcretePlace, HeroMood]),
-	random_grammar_clause_v2(event,[_,GlobalMood, 
-									  Location,
-									  Hero,
-									  ConcretePlace,
-									  HeroMood],Event),
-									  writeln(Event)
-},Event.
 							
 % Return hero name, and his concrete location
 hero_descr(GlobalMood, Location, Hero,ConcretePlace, HeroMood) --> hero(Hero),
 												   hero_action,
 												   hero_location(Location,ConcretePlace),
+												   ['he was'],
 												   hero_mood(GlobalMood, HeroMood).
 
-event(other_hero,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->
+event(other_hero,GlobalMood,_Location,Hero,ConcretePlace,HeroMood)-->
 	['Suddenly'],
+	hero_mood(GlobalMood,_AnotherHeroMood),
 	hero(AnotherHero),
 	['comes in'],
 	[ConcretePlace],
 	['.'],
-	hero_speaks(AnotherHero,Hero,Asks),
+	hero_speaks(AnotherHero,Hero,_Asks),
 	hero_reacts(HeroMood).
 	
-event(robbery,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->[true].
+event(robbery,GlobalMood,Location,Hero,ConcretePlace,HeroMood)-->[robbery].
 
 hero_speaks(Hero) --> [Hero], 
 					  ['hello'].
@@ -83,10 +77,10 @@ hero_reacts(HeroMood) --> {lex(HeroMood,mood,AnswerTone)},
 %replic(Hero,Asks)
 
 % Return mood of hero
-hero_mood(GlobalMood, HeroMood) --> ['He was'],
-									mood(GlobalMood, HeroMood),
-									[.].
+hero_mood(GlobalMood, HeroMood) --> mood(GlobalMood, HeroMood),
+									reason.
 
+reason --> ['without reason'].
 
 % Return concrete location of hero
 hero_location(Location,ConcretePlace) --> prep(prp),

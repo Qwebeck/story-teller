@@ -1,4 +1,21 @@
 :-dynamic lex/3.
+% Helpful predicates
+% Dynamicaly creates connections at the beggining of story, between concretelocations and prepositions
+location_preposition([hall, forge, cabinet, bathroom,gym,tent,tavern, pub, prison,cave, 'dwarf hall'], [in, inside, at]).
+location_preposition(['fallen tree',spaceship,lodon, edinburg, 'horse back'], [on,under]).
+
+
+
+connect_loc_prep([Loc|Locations],Prepositions):-
+    length(Locations, L),
+    L>0,
+    !,
+    assert(lex(Loc,loc_prep,Prepositions)),
+    connect_loc_prep(Locations,Prepositions).    
+
+connect_loc_prep([Loc],Prepositions):-
+    assert(lex(Loc,loc_prep,Prepositions)).
+
 % Times 
 lex(continous, times).
 lex(present, times).
@@ -54,12 +71,9 @@ lex('Great, thank you!',answer,good).
 lex(castle, place,[hall, forge, cabinet, bathroom]).
 lex(spaceship,place,[bridge, gym]).
 lex(forest,place,['fallen tree', tent]).
-lex(london,place, [cabinet, tavern, pub, prison(bad)]).
+lex(london,place, [cabinet, tavern, pub, prison]).
 lex(mountains,place,[cave, 'dwarf hall']).
 lex(britan, place,[lodon, edinburg, 'horse back']).
-% Smaller locations
-
-
 
 % prp - preposition of place
 % prt - preposition of time
