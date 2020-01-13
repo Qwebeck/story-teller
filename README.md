@@ -1,8 +1,8 @@
 # Generator historii w prologu
 Program jest podzielony na 4 pliki:
 
-1. `story_teller.pl` - plik główny. W pliku miesci się tylko jedyn predykat: `gen_s/0`. Jedynym zadaniem predykatu jest generowanie i wypisywanie historii. 
-2. `utils.pl` - plik pomocniczy. W pliku są umieszczone funkcje pomocnicze, które są wykorzystywane w innych częsciach programu.
+1. `story_teller.pl` - plik główny. W pliku mieści się tylko jeden predykat: `gen_s/0`. Jedynym zadaniem predykatu jest generowanie i wypisywanie historii. 
+2. `utils.pl` - plik pomocniczy. W pliku są umieszczone funkcje pomocnicze, które są wykorzystywane w innych częściach programu.
 3. `grammar.pl` - plik który opisuje gramatykę tworzonej historii.
 4. `lexic.pl` - baza wiedzy generatora.
 # Przykładowe historii
@@ -31,7 +31,7 @@ John Snow tried to help  Winston to save  London  but he met with failure
 ```
 
 # Działanie
-Działanie programu rozpoczyna się z predykatu `gen_s/0`, który wywoluje predykat `story/2`. Predykat ten odpowiada za wybór losowego predykatu, do tworzenia wstępu do historii. Na razie losowości nie ma dlatego, że istnieje tylko jeden predykat, tworzący wstępy, ale nic nie stoi na przeszkodzie do tego, żeby opisać kolejne. W tym przypadku, predykat  `random_grammar_clause_v2/4`, wybierze i uruchomi jeden z nich. Dalej będzie opisane działanie na przykładzie predykatu `inroduction(start_in_place)`, który odpowiada za to, żeby historia rozpoczynała się z opisu jakiegoś miejsca.
+Działanie programu rozpoczyna się z predykatu `gen_s/0`, który wywołuje predykat `story/2`. Predykat ten odpowiada za wybór losowego predykatu, do tworzenia wstępu do historii. Na razie losowości nie ma dlatego, że istnieje tylko jeden predykat, tworzący wstępy, ale nic nie stoi na przeszkodzie do tego, żeby opisać kolejne. W tym przypadku, predykat  `random_grammar_clause_v2/4`, wybierze i uruchomi jeden z nich. Dalej będzie opisane działanie na przykładzie predykatu `inroduction(start_in_place)`, który odpowiada za to, żeby historia rozpoczynała się z opisu jakiegoś miejsca.
 ```prolog
 introduction(start_in_place) -->
     place_descr(GlobalMood, Location),
@@ -52,7 +52,7 @@ introduction(start_in_place) -->
 	},
 	Event.		
 ```
-W pierwszej linijce widzimy predykat `place_descr/2`. Oba parametry są przez niego zwracane i mają wpływ na dalszy ciag historii. Parametr `GloabalMood` - decyduje o tym, jaki humor będzie miał główny bohater, a parametr `Location`, o tym w jakiej lokacji będzie się odbywać historia. Parametry te są wybierany z bazy wiedzy w sposób losowy. 
-Potem , podajemy te parametry do predykatu `hero_descr/5`. Predykat ten zaczyna tworzyć opis bohatera, tego coon robi i tego gdzie się znajduje, na podstawie parametrów które przekazaliśmy do niego i zwraca nowe parametry które będą miały wpływ na dalszy przebieg historii: `Hero,ConcretePlace,HeroMood`.
-Następnie jest losowany i wywolywany predykat, który opisuje zdarzenie i przyjmuje jako argumenty wcześniej wygenerowane parametry. Za pomocą podobnych procesów: losowania i budowania związków jest tworzona reszta historii. 
+W pierwszej linijce widzimy predykat `place_descr/2`. Oba parametry są przez niego zwracane i mają wpływ na dalszy ciąg historii. Parametr `GloabalMood` - decyduje o tym, jaki humor będzie miał główny bohater, a parametr `Location`, o tym w jakiej lokacji będzie się odbywać historia. Parametry te są wybierany z bazy wiedzy w sposób losowy. 
+Potem , podajemy te parametry do predykatu `hero_descr/5`. Predykat ten zaczyna tworzyć opis bohatera, tego co on robi i tego gdzie się znajduje, na podstawie parametrów które przekazaliśmy do niego i zwraca nowe parametry które będą miały wpływ na dalszy przebieg historii: `Hero,ConcretePlace,HeroMood`.
+Następnie jest losowany i wywoływany predykat, który opisuje zdarzenie i przyjmuje jako argumenty wcześniej wygenerowane parametry. Za pomocą podobnych procesów: losowania i budowania związków jest tworzona reszta historii. 
 
